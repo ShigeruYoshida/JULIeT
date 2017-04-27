@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Package icecube.uhe.interactions</title>
+  </head>
+
+  <body>
+    <h1>Package icecube.uhe.interactions</h1>
+
+<P>
+      This package deals with all kind of interactions
+involving elemetary particles such as charged leptons and neutrinos.
+The Key classes are <b>Interactions</b> and <b>InteractionsMatrix</b>.
+
+<P>
+The class <b>Interactions</b> is the abstract class to provide the methods
+to calculate differential cross section, total cross section,
+inelasticity, etc. The individual interaction class like 
+<b>PairCreation</b> is a child class of <b>Interactions</b>.
+
+<P>
+You find the classes of "interaction name" + "Fit" like
+<b>PairCreationFit</b>. They have been prepared for saving
+CPU time because cross sections in a few interactions
+require intensive calculations and would not be so practical
+if you calculate the relevant numbers in real-time manner.
+Instead the <b>InteractionFit</b> classes read out
+the pre-calculated differential cross section table
+(<it>to be accurate</it>, y/E x dSigma/dy)
+from the file and interpolates them to give a differential
+cross section and to give a total cross section by numerical
+integration. The cross section table can be generated
+by the class of "Make" + "interaction name" + "Table"
+like <b>MakePairCreationTable</b>.
+
+<P>
+The <b>InteractionsMatrix</b> class calculates
+the interaction matrices consisting of the differential
+cross sections dSigma/dlogE_j(log E_i) and sigma(log E_i).
+The integer iLogE is an index of the matrix and
+<pre>
+
+log E =  Particle.getDeltaLogEnergy() x iLogE +  Particle.getLogEnergyMinimum()
+
+</pre>
+gives the energy. The defaults values defined by the <b>Particle</b>
+class in the package icecube.uhe.particles are
+<pre>
+
+log E[GeV] =  0.01 x iLogE +  6.0
+
+</pre>
+and iLogE &lt 600. 
+
+The each interactionMatrix objects are generated, serialized, and out-streamed
+in the disk by "Make" + "interaction name" + "Mtx" like 
+<b>MakeBremsstrahlungMtx</b>. These out-streamed objects will be used
+for later work like calculating particle propagation in earth
+performed by the classes in the package icecube.uhe.propagation.
+
+    <hr>
+    <address><a href="mailto:syoshida@hepburn.s.chiba-u.ac.jp">Shigeru Yoshida</a></address>
+<!-- Created: Sat Apr 19 09:35:54 JST 2003 -->
+<!-- hhmts start -->
+Last modified: Mon Apr 21 11:25:26 JST 2003
+<!-- hhmts end -->
+  </body>
+</html>
