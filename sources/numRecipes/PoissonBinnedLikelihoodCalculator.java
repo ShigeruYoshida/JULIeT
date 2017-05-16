@@ -17,6 +17,7 @@ import java.util.*;
 */
 public class PoissonBinnedLikelihoodCalculator implements Serializable{
 
+    private static final long serialVersionUID = -7112334109753025742L;
     private boolean isDataFilled = false;
     private boolean mapsHaveBeenGenerated = false;
     protected boolean useTheReplicaResults = false;
@@ -448,9 +449,57 @@ public class PoissonBinnedLikelihoodCalculator implements Serializable{
     }
 
     /** 
+	Multiply the scale factor to the expected number in each of the bins.
+     */
+    public void multiplyFactor(double scaleFactor){
+
+	expectedSum = 0.0;
+
+	Iterator dataIterator = realDataMap.entrySet().iterator();
+	if(useTheReplicaResults) dataIterator = replicaDataMap.entrySet().iterator();
+	Map newDataMap = new LinkedHashMap();
+
+	while(dataIterator.hasNext()){
+	    Map.Entry entryData = (Map.Entry )(dataIterator.next());
+	    LinkedHashMap binDataMap = (LinkedHashMap )(entryData.getValue());
+	    Integer binNumberObj = (Integer )(entryData.getKey());
+	    int binNumber = binNumberObj.intValue();
+	    Iterator binIterator = binDataMap.entrySet().iterator();
+
+	    while(binIterator.hasNext()){
+		Map.Entry entry = (Map.Entry )(binIterator.next());
+		Double expectedObj = (Double )(entry.getValue());
+		double expectedValue = expectedObj.doubleValue()*scaleFactor;
+		Long numberObj = (Long )(entry.getKey());
+		long observedNumber = numberObj.longValue();
+		Double expectedNewObj = new Double(expectedValue);
+
+		expectedSum += expectedValue;
+
+		LinkedHashMap newBinDataMap = new LinkedHashMap();
+		newBinDataMap.put(numberObj,expectedNewObj);
+		newDataMap.put(binNumberObj,newBinDataMap);
+	    }
+	}
+
+	if(useTheReplicaResults){
+	    replicaDataMap.clear();
+	    replicaDataMap.putAll(newDataMap);
+	    newDataMap.clear();
+	}else{
+	    realDataMap.clear();
+	    realDataMap.putAll(newDataMap);
+	    newDataMap.clear();
+	}
+
+    }
+
+    /** 
 	Copy the observed number in calSignal to the internal map to this object.
      */
     public void copyObservedNumbers(PoissonBinnedLikelihoodCalculator calSignal){
+
+	long observedSumInCalSignal = 0;
 
 	Iterator dataIterator = realDataMap.entrySet().iterator();
 	if(useTheReplicaResults) dataIterator = replicaDataMap.entrySet().iterator();
@@ -487,6 +536,7 @@ public class PoissonBinnedLikelihoodCalculator implements Serializable{
 		double expectedSignalValue = expectedSignalObj.doubleValue();
 		Long numberSignalObj = (Long )(entrySignal.getKey());
 		long observedSignalNumber = numberSignalObj.longValue();
+		observedSumInCalSignal += observedSignalNumber;
 
 		LinkedHashMap newBinDataMap = new LinkedHashMap();
 		newBinDataMap.put(numberSignalObj,expectedObj);
@@ -498,10 +548,12 @@ public class PoissonBinnedLikelihoodCalculator implements Serializable{
 	    replicaDataMap.clear();
 	    replicaDataMap.putAll(newDataMap);
 	    newDataMap.clear();
+	    observedSumInTheReplicaExpetiment = observedSumInCalSignal;
 	}else{
 	    realDataMap.clear();
 	    realDataMap.putAll(newDataMap);
 	    newDataMap.clear();
+	    observedSum = observedSumInCalSignal;
 	}
 
     }

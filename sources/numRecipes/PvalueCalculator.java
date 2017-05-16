@@ -66,14 +66,7 @@ public class PvalueCalculator {
 	    sigma += 0.01;
 	    gaussProb = SpecialFunctions.integrateGauss(0.0,1.0,sigma,sigmaUpperBound);
 	}while(gaussProb>=pValueFC);
- 	    
-	System.out.format(" %f sigma equivalent FC \n",sigma);
-	sigma = 0.0;
-	do{
-	    sigma += 0.01;
-	    gaussProb = SpecialFunctions.integrateGauss(0.0,1.0,sigma,sigmaUpperBound);
-	}while(gaussProb>=pValue);
- 	    
+  	    
 	System.out.format(" %f sigma equivalent\n",sigma);
     }
 

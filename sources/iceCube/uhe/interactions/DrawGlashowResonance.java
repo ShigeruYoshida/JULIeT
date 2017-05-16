@@ -74,6 +74,16 @@ public class DrawGlashowResonance {
 	System.out.println("join");
 	System.out.println("disp");
 	System.out.println("cont");
+	// W Resonance behavior checks
+	double wResEnergy = grLepton.massW*grLepton.massW/(2.0*grLepton.massE);
+	grLepton.setIncidentParticleEnergy(wResEnergy);
+	grHadron.setIncidentParticleEnergy(wResEnergy);
+	double sigmaRes = grLepton.getSigma()+grHadron.getSigma();
+	double zRes1PeV = 1.0e6/wResEnergy;
+	double sigmaRes1PeV = grLepton.integralDSigmaDz(zRes1PeV*0.65,zRes1PeV*1.35);
+	System.out.println(" Res Energy " + wResEnergy + " sigma = " + sigmaRes + 
+			   " 1PeV/ResE = " + zRes1PeV + " part.sigma = " + sigmaRes1PeV);
+
 	for(iLogE=0;iLogE< Particle.getDimensionOfLogEnergyMatrix();iLogE++){
 
 	    // Total Cross Section

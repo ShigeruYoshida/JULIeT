@@ -26,6 +26,10 @@ public class NeutrinoEffAreaTable {
 	"iceCube/uhe/analysis/NeutrinoEffectiveArea_IC40.dat";
     private String TableFileName = 
 	"iceCube/uhe/analysis/NeutrinoEffectiveArea_IC86.dat";
+    private String OnlineTableFileName = 
+	"iceCube/uhe/analysis/NeutrinoEffectiveArea_online_IC86.dat";
+
+    private boolean offlineArea = true;
 
     private final int numberOfFlavor = 3;
     private int numLogEbin = 122;
@@ -40,15 +44,19 @@ public class NeutrinoEffAreaTable {
     private double m2_to_cm2 = 1.0e4;
 
     /**
-       Constructor. Specify IC40 or IC86;
+       Constructor. Specify IC86-offline or IC86-online-alert
        and the doublet variables in the argument. For example,
        flavor=1, doublet = 1, gives the effective area of inIce muons.
     */
-    public NeutrinoEffAreaTable(boolean fullIceCube86) throws IOException {
+    public NeutrinoEffAreaTable(boolean offlineIceCube86) throws IOException {
 
 	String tableFileName;
-	if(fullIceCube86) tableFileName = new String(TableFileName);
-	else  tableFileName = new String(IC40TableFileName);
+	if(offlineIceCube86) tableFileName = new String(TableFileName);
+	//else  tableFileName = new String(IC40TableFileName);
+	else{
+	    tableFileName = new String(OnlineTableFileName);
+	    offlineArea = false;
+	}
 
 	// Reading out the table data
 	BufferedReader in =  
@@ -116,7 +124,8 @@ public class NeutrinoEffAreaTable {
      */
     public double getArea(int flavor, double logEnergy){
 
-	if(logEnergy<5.0 ) return 0.0;
+	if(logEnergy<5.0 && offlineArea) return 0.0;
+	if(logEnergy<4.0 && !offlineArea) return 0.0;
 
 
 	if(logEnergy >= logEArray[numLogEbin-2]) logEnergy = logEArray[numLogEbin-2];
@@ -135,23 +144,23 @@ public class NeutrinoEffAreaTable {
     public static void main(String[] args) throws IOException{
 
 	int flavor = 1;
-	boolean isFullArray = true;
+	boolean offlineIC86 = true;
 	if(args.length!=2){
-	    System.out.println("Usage:NeutrinoEffAreaTable flavor isfullArray(1 for yes, 0 for IC40)");
+	    System.out.println("Usage:NeutrinoEffAreaTable flavor IC86offline(1 for yes, 0 for online IC86)");
 	    System.exit(0);
 	}else{
 	    flavor = Integer.valueOf(args[0]).intValue();
-	    if(Integer.valueOf(args[1]).intValue()==0) isFullArray=false;
+	    if(Integer.valueOf(args[1]).intValue()==0) offlineIC86=false;
 	}
 
-	NeutrinoEffAreaTable areaTable = new NeutrinoEffAreaTable(isFullArray);
+	NeutrinoEffAreaTable areaTable = new NeutrinoEffAreaTable(offlineIC86);
 
 
 	System.out.println("titx Energy [GeV]");
 	System.out.println("tity Area [m^2!])");
 	System.out.println("scal 1.0e5 1.0e11 1.0e-2 5.0e+4");
 
-	double logE = 5.0;
+	double logE = 4.0;
 	while(logE <= 11.0){
 	    double area = areaTable.getArea(flavor,logE)/areaTable.m2_to_cm2;
 	    double energy =  Math.pow(10.0,logE);

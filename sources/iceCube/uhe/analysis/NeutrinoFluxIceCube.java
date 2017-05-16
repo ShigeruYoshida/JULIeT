@@ -23,7 +23,7 @@ Written by S.Yoshida 2011 May 1st
 class NeutrinoFluxIceCube implements Function {
 
     static final double ln10 = Math.log(10.0);
-    static final double solidAngle = 4.0*Math.PI; // 4pi, the neutrino observation solid angle
+    static double solidAngle = 4.0*Math.PI; // 4pi, the neutrino observation solid angle
 
     static final double day_to_sec = 8.64e4;
     double livetime = 5.0*365.0*day_to_sec; // 365 days = 1 year
@@ -125,14 +125,16 @@ class NeutrinoFluxIceCube implements Function {
 	    //System.err.println(" flux= " + neutFlux.getDFDLogE(8.0,1));
 
 	if(!isExposure){
-	    System.err.print("Full IceCube configuration? [yes(1 - IC86)/no(0 - IC40)] ->"); 
+	    System.err.print("Full IceCube configuration? [yes(1 - IC86 offline)/no(0 - IC86 onlie)] ->"); 
 	    buffer   = d.readLine(); 
 	    if(Integer.valueOf(buffer).intValue()==1) {
 		areaTable = new NeutrinoEffAreaTable(true); // IC86
 		System.err.println("Considering the full IC86 array");
 	    }else{
-		areaTable = new NeutrinoEffAreaTable(false);// IC40
-		livetime = 333.5*day_to_sec;   // 333.5 days IC40 livetime (exclud. burn sample)
+		//areaTable = new NeutrinoEffAreaTable(false);// IC40
+		areaTable = new NeutrinoEffAreaTable(false);// IC86 online alert area
+		solidAngle = 2.0*Math.PI; // 2pi, upward-going only
+		//livetime = 333.5*day_to_sec;   // 333.5 days IC40 livetime (exclud. burn sample)
 		System.err.println("Considering the IC40 array");
 	    }
 	}else{

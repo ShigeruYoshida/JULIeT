@@ -133,7 +133,26 @@ public class NeutrinoFluxFromSource extends NeutrinoFluxFunction {
 	return targetPhotonEnergyMin;
     }
 
+    /** return the maximum energy of the target photons [GeV].  */
+    public static double getMaximumTargetPhotonEnergy(){
+	return targetPhotonEnergyMax;
+    }
 
+    /** set the minimum energy of target photons [GeV]. You can specify this value
+	to determine the maximum neutrino energy. The other option is
+	to set the maximum neutrino energy by calling the method of setMaximumNeutrinoEnergy(double energy),
+	which then automatically determines the minimum energy of target photons.
+     */
+    public static void setMinimumTargetPhotonEnergy(double energy){
+	targetPhotonEnergyMin = energy;
+	neutrinoEnergyMax = 
+	    (sRes-Mp*Mp)*lorentzBulkFactor*lorentzBulkFactor/(4.0*targetPhotonEnergyMin)*piEnergyMinus*(1.0-rPi);
+    }
+
+    /** set the maximal energy of target photons [GeV]*/
+    public static void setMaximumTargetPhotonEnergy(double energy){
+	targetPhotonEnergyMax = energy;
+    }
 
     public double getFunction(int functionIndex, double[] parameters, 
 			      double x){

@@ -170,6 +170,11 @@ public class ModelNormalizationCalculatorByPoissonBinnedLikelihood {
 	    // first the real data
 	    runReplicaExperiment = false;
 	    double llhNull = testFactory.buildLikelihoodForNullHypothesis(runReplicaExperiment);
+	    if(includeNuisance){
+		System.out.format("nuisance normalization in null hypothesis = %e\n",
+				  testFactory.getNuisanceNormalizationToMaximizeLikelihood());
+	    }
+		
 	    double llhSignalFloated = 0.0;
 	    double  maximizedSignalFactor = 0.0;
 	    double  maximizedNuisanceFactor = 0.0;

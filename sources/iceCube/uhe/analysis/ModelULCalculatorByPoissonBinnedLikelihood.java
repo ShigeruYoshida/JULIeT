@@ -31,12 +31,22 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 
     protected static int likelihoodRatioType = 2;
     private static boolean includeNuisance = false;
+    private static boolean accelerated = false;
     protected static double confidenceLevel = 0.90; // 90% C.L. default
+    protected static double nuisanceMultiplier = 1.0;
+    protected static double epsilon = 1.0e-5; // round off
 
     protected static PoissonBinnedLikelihoodCalculator calBG = null;
     protected static PoissonBinnedLikelihoodCalculator calSignal = null;
     protected static PoissonBinnedLikelihoodCalculator calNuisanceSignal = null;
     protected static ModelTestByPoissonBinnedLikelihoodFactory testFactory = null;
+
+    protected static boolean doNOTfloatNuisanceInNullHypothesis = false;
+    /** A fixed fraction of the nuisance signal fitted by the data is used in
+        the UL calculation, instead of using  the bestfit nuisance signal itself,
+        in the null hypoethesis  */
+    protected static boolean useFractionOfBestFitNuisanceSignal = false;
+    protected static boolean conditioning = false;
 
 
     protected static void calculateUpperLimit(){
@@ -48,20 +58,26 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 	// the lilelihood of null hypothesis (model + bg)
 	// fiest the real data
 	boolean runReplicaExperiment = false;
+	if(doNOTfloatNuisanceInNullHypothesis) testFactory.doNotFloatNuisanceInNullHypothesis();
 	double llhNull = testFactory.buildLikelihoodForNullHypothesis(runReplicaExperiment);
+	double  maximizedFactor = 0.0;	
+	double  maximizedNuisanceFactorNull = testFactory.getNuisanceNormalizationToMaximizeLikelihood();
+	double  maximizedNuisanceFactor = 0.0;
 	double llhSignalFloated = 0.0;
-	double  maximizedFactor = 0.0;
 	if(!includeNuisance){    
 	    llhSignalFloated = testFactory.buildLikelihoodForAlternativeHypothesis(false,runReplicaExperiment);
 	    maximizedFactor = testFactory.getModelNormalizationToMaximizeLikelihood();
 	}else{
 	    llhSignalFloated = testFactory.buildLikelihoodForHybridHypothesis(runReplicaExperiment);
 	    maximizedFactor = testFactory.getModelNormalizationToMaximizeLikelihood();
+	    maximizedNuisanceFactor = testFactory.getNuisanceNormalizationToMaximizeLikelihood();
 	}
 
 	System.err.format("llh Null = %e\n",llhNull);
 	System.err.format("llh signal Floated = %e\n",llhSignalFloated);
 	System.err.format("normalization to maximize llh = %e\n",maximizedFactor);
+	if(includeNuisance) System.err.format("nuisance normalization to maximize llh = %e\n",maximizedNuisanceFactor);
+
 
 	double llhRatioObserved = llhNull-llhSignalFloated;
 	System.err.format("llh Ratio = %e\n",llhRatioObserved);
@@ -69,14 +85,25 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 	// 
 	// The pre run to estimate the upper limit
 	//
-	double multipleFactor =  maximizedFactor;
+	double observedNumber = calBG.getSumOfObservedValues();
+	double expectedNumberSignal = calSignal.getSumOfExpectedValues();
+	double expectedNumberBG = calBG.getSumOfExpectedValues();
+	if(includeNuisance) expectedNumberBG = calBG.getSumOfExpectedValues() + 
+			calNuisanceSignal.getSumOfExpectedValues()*nuisanceMultiplier*maximizedNuisanceFactorNull;
+	System.err.format("obs(%f) expectedSignal(%e) expectedBG(%e)\n",
+			  observedNumber,expectedNumberSignal,expectedNumberBG);
+	double multipleFactor = (observedNumber-expectedNumberBG)/expectedNumberSignal;
+	if(multipleFactor<=0.0) multipleFactor = epsilon;
+
+	//double multipleFactor =  maximizedFactor;
 	double deltaFactor = 0.25;
 	//double deltaFactor = 500.0;
 	if(multipleFactor <= 0.1 ) deltaFactor = 0.1;
 	if((!includeNuisance) && multipleFactor <= 0.07 ) deltaFactor = 0.02;
+	multipleFactor -= deltaFactor;
 	double significance = 1.0;
 	int runTimes = 1000;
-	if(includeNuisance) runTimes = 30;
+	if(includeNuisance) runTimes = 100;
 	while(significance>(1.0-confidenceLevel)){ // 90 % C.L.
 	    multipleFactor += deltaFactor;
 	    PoissonBinnedLikelihoodCalculator calSignalFloated = new PoissonBinnedLikelihoodCalculator();
@@ -91,7 +118,10 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 		     new ModelTestByPoissonBinnedLikelihoodFactory(calBG, calSignalFloated, calNuisanceSignal);
 
 	    runReplicaExperiment = false;
+	    if(doNOTfloatNuisanceInNullHypothesis) testFactoryForUpperSignal.doNotFloatNuisanceInNullHypothesis();
 	    llhNull = testFactoryForUpperSignal.buildLikelihoodForNullHypothesis(runReplicaExperiment);
+	    if(includeNuisance) maximizedNuisanceFactor = 
+				    testFactoryForUpperSignal.getNuisanceNormalizationToMaximizeLikelihood();
 	    if(!includeNuisance){    
 		llhSignalFloated = 
 		    testFactoryForUpperSignal.buildLikelihoodForAlternativeHypothesis(false,runReplicaExperiment);
@@ -107,6 +137,15 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 	    //System.err.format("normalization to maximize llh = %e\n",maximizedFactor);
 	    //System.err.format("llh Ratio = %e\n",llhRatioObserved);
 
+	    if(conditioning) testFactoryForUpperSignal.doConditioning(llhNull);
+	    if(useFractionOfBestFitNuisanceSignal && includeNuisance){
+		testFactoryForUpperSignal = null;
+		testFactoryForUpperSignal =  
+		    new ModelTestByPoissonBinnedLikelihoodFactory(calBG, calSignalFloated, calNuisanceSignal);
+		testFactoryForUpperSignal.doNotFloatNuisanceInNullHypothesis();
+		testFactoryForUpperSignal.nuisanceSignalFixedMultiplier = nuisanceMultiplier*maximizedNuisanceFactor;
+		llhNull = testFactoryForUpperSignal.buildLikelihoodForNullHypothesis(runReplicaExperiment);
+	    }
 	    testFactoryForUpperSignal.makeCollectionOfLogLikelihoodRatio(likelihoodRatioType,runTimes);
 	    ListIterator llhRatioListIterator = testFactoryForUpperSignal.getllhRatioIterator();
 	    int times = 0;
@@ -117,11 +156,26 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 		double pValue = 1.0-((double )times)/((double )runTimes);
 		if(llhRatio< llhRatioObserved) significance = pValue;
 	    }
-	    System.err.format("multiple factor(%f) observed rate (%d) expected rate (%f) p-value(%f)\n",
+	    System.err.format("multiple factor(%f) observed rate (%d) expected rate (%f) llh-ratio(%e) p-value(%f)\n",
 			      multipleFactor,calSignalFloated.getSumOfObservedValues(),
-			      calSignalFloated.getSumOfExpectedValues(),significance);
+			      calSignalFloated.getSumOfExpectedValues(),llhRatioObserved,significance);
+
+	    if(significance>2.0*(1.0-confidenceLevel)){ // too far way to reach to the confidenceLevel region
+		if(!accelerated){
+		    deltaFactor = 2.0*deltaFactor;
+		    runTimes = 50;
+		}
+		accelerated = true;
+	    }else if(accelerated){
+		deltaFactor = 0.5*deltaFactor;
+		runTimes = 100;
+		accelerated = false;
+	    }
+
+
 	}
 	double initialGuessOfMultipleFactor = multipleFactor - 1.0*deltaFactor;
+	if(initialGuessOfMultipleFactor<0.0) initialGuessOfMultipleFactor = 0.0;
 	//if(initialGuessOfMultipleFactor<= maximizedFactor) 
 	//    initialGuessOfMultipleFactor = maximizedFactor;
 
@@ -133,7 +187,8 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 	//deltaFactor = 20.0;
 	significance = 1.0;
 	runTimes = 10000;
-	if(includeNuisance) runTimes = 300;
+	//if(includeNuisance) runTimes = 300;
+	if(includeNuisance) runTimes = 500;
 	while(significance>(1.0-confidenceLevel)){ // 90 % C.L.
 	    multipleFactor += deltaFactor;
 	    PoissonBinnedLikelihoodCalculator calSignalFloated = new PoissonBinnedLikelihoodCalculator();
@@ -148,7 +203,12 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 		     new ModelTestByPoissonBinnedLikelihoodFactory(calBG, calSignalFloated, calNuisanceSignal);
 
 	    runReplicaExperiment = false;
+	    if(doNOTfloatNuisanceInNullHypothesis) testFactoryForUpperSignal.doNotFloatNuisanceInNullHypothesis();
 	    llhNull = testFactoryForUpperSignal.buildLikelihoodForNullHypothesis(runReplicaExperiment);
+
+	    if(includeNuisance)	maximizedNuisanceFactor = 
+				    testFactoryForUpperSignal.getNuisanceNormalizationToMaximizeLikelihood();
+	    
 	    if(!includeNuisance){    
 		llhSignalFloated = 
 		    testFactoryForUpperSignal.buildLikelihoodForAlternativeHypothesis(false,runReplicaExperiment);
@@ -159,6 +219,15 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 	    maximizedFactor = testFactoryForUpperSignal.getModelNormalizationToMaximizeLikelihood();
 	    llhRatioObserved = llhNull-llhSignalFloated;
 
+	    if(conditioning) testFactoryForUpperSignal.doConditioning(llhNull);
+	    if(useFractionOfBestFitNuisanceSignal && includeNuisance){
+		testFactoryForUpperSignal = null;
+		testFactoryForUpperSignal =  
+		    new ModelTestByPoissonBinnedLikelihoodFactory(calBG, calSignalFloated, calNuisanceSignal);
+		testFactoryForUpperSignal.doNotFloatNuisanceInNullHypothesis();
+		testFactoryForUpperSignal.nuisanceSignalFixedMultiplier = nuisanceMultiplier*maximizedNuisanceFactor;
+		llhNull = testFactoryForUpperSignal.buildLikelihoodForNullHypothesis(runReplicaExperiment);
+	    }
 	    testFactoryForUpperSignal.makeCollectionOfLogLikelihoodRatio(likelihoodRatioType,runTimes);
 	    ListIterator llhRatioListIterator = testFactoryForUpperSignal.getllhRatioIterator();
 	    int times = 0;
@@ -169,9 +238,9 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
 		double pValue = 1.0-((double )times)/((double )runTimes);
 		if(llhRatio< llhRatioObserved) significance = pValue;
 	    }
-	    System.err.format("multiple factor(%f) observed rate (%d) expected rate (%f) p-value(%f)\n",
+	    System.err.format("multiple factor(%f) observed rate (%d) expected rate (%f) llh-ratio(%e) p-value(%f)\n",
 			      multipleFactor,calSignalFloated.getSumOfObservedValues(),
-			      calSignalFloated.getSumOfExpectedValues(),significance);
+			      calSignalFloated.getSumOfExpectedValues(),llhRatioObserved,significance);
 	}
 
 	System.out.format("UL %e\n",multipleFactor);
@@ -187,17 +256,34 @@ public class ModelULCalculatorByPoissonBinnedLikelihood {
         String bgEventRateFileName = null;
 
         if(args.length<3){
-            System.out.println("Usage: ModelULCalculatorByPoissonBinnedLikelihood filename-to-read-BGdata filename-to-read-SIGdata DataIsMap(yes 1 no 0) (filename-E2-Map as nuisance)");
+            System.out.println("Usage: ModelULCalculatorByPoissonBinnedLikelihood filename-to-read-BGdata filename-to-read-SIGdata DataIsMap(yes 1 no 0) (filename-E2-Map as nuisance) (1 -nuisance is NOT floated in null hypothesis 2- conditioning 3- fixed multiplier to nuisance) (nuisanceMultiplier)");
             System.exit(0);
         }else {
             bgEventRateFileName = args[0];
             sigEventRateFileName = args[1];
 	    int index = Integer.valueOf(args[2]).intValue();
 	    if(index == 1)  DataIsMap = true;
-	    if(args.length==4){
+	    if(args.length>=4){
 		includeNuisance = true;
 		nuisanceSigEventRateFileName = args[3];
 		likelihoodRatioType = 6;
+
+		if(args.length >= 5){
+		    int index2 = Integer.valueOf(args[4]).intValue();
+		    if(index2 == 1){
+			doNOTfloatNuisanceInNullHypothesis = true;
+			System.err.println("  nuisance is NOT floated in the null hypothesis");
+		    }else if (index2 == 2){
+			conditioning = true;
+			System.err.println("  conditioning is applied in replica-experiments of the null hypothesis");
+		    }else if (index2 == 3){
+			useFractionOfBestFitNuisanceSignal = true;
+			nuisanceMultiplier = Double.valueOf(args[5]).doubleValue();
+			System.err.format("  the bestfit nuisance flux multiplied by %f is used in the null hypothesis",
+					  nuisanceMultiplier);
+		    }
+		}
+
 	    }
 	}
 	System.err.format(" likelihood ratio type = %d\n",likelihoodRatioType);

@@ -34,8 +34,10 @@ public class ModelTestByPoissonBinnedLikelihoodFactory {
     public PoissonBinnedLikelihoodCalculator calNull = null;  // Likelihood Calculator for the null hypothesis
     public PoissonBinnedLikelihoodCalculator calAlter = null; // Likelihood Calculator for the alternative hypothesis
     public PoissonBinnedLikelihoodCalculator calHybrid = null; // Likelihood Calculator for the hybrid hypothesis
+    public double nuisanceSignalFixedMultiplier  = 1.0;       // fixed multipler to nuisance signal if not floated
 
     protected boolean includeNuisance = true;
+    protected boolean doNOTfloatNuisanceInNullHypothesis = false;
     protected double llhNull = Double.POSITIVE_INFINITY;
     protected double llhAlter = Double.POSITIVE_INFINITY;
 
@@ -45,6 +47,9 @@ public class ModelTestByPoissonBinnedLikelihoodFactory {
     private boolean calNullHasBeenGenerated = false;
     private boolean builtNullHypothesisLikelihood = false;
     private boolean builtAlterHypothesisLikelihood = false;
+
+    private boolean conditioning = false;
+    protected double llhThresholdInConditioning = Double.POSITIVE_INFINITY;
 
     /** list to store ratio of likelihood -log(product of binned Poisson) from sets of many replica experiments*/
     private List llhRatioList = null;
@@ -111,6 +116,38 @@ public class ModelTestByPoissonBinnedLikelihoodFactory {
 	return includeNuisance;
     }
 
+    public void doNotFloatNuisanceInNullHypothesis(){
+	doNOTfloatNuisanceInNullHypothesis = true;
+    }
+
+
+    public void floatNuisanceInNullHypothesis(){
+	doNOTfloatNuisanceInNullHypothesis = false;
+    }
+
+    /**
+       When running replica experiments, the conditioning probability is applied.
+       Only the pseudo-data with the llh null hypothesis lager than llhTreshold
+       are taken into consideration in calculating p-values and UL.
+       <pre>
+       double llhThreshold:  the threshold of llh (-log(Poisson null hypothesis))
+       </pre>
+     */
+    public void doConditioning(double llhThreshold){
+	conditioning = true;
+	llhThresholdInConditioning = llhThreshold;
+    }
+
+    /**
+       Do not have any conditioning applied in replica experiments. This is default.
+     */
+    public void doNOTConditioning(){
+	conditioning = false;
+	llhThresholdInConditioning =  Double.POSITIVE_INFINITY;
+    }
+
+
+
 
     /** 
 	Build the null hypothesis : the (GZK or astro) signal + background.
@@ -141,8 +178,10 @@ public class ModelTestByPoissonBinnedLikelihoodFactory {
 		calNull.addExpectedNumbers(calSignal);  // add the expected event rate of the signal to be tested.
 		if(includeNuisance){
 		    calNuisanceSignal.useTheResultsByTheRealExperiment();
-		    maximizedNuisanceFactor = 0.0;
-		    maximizedNuisanceFactor = calNull.getSignalFactor(1.0, calNuisanceSignal);
+		    maximizedNuisanceFactor = nuisanceSignalFixedMultiplier;
+		    if(!doNOTfloatNuisanceInNullHypothesis){
+			maximizedNuisanceFactor = calNull.getSignalFactor(1.0, calNuisanceSignal);
+		    }
 		    //System.err.format(" nuisance factor in the null hypothesis =%e\n",maximizedNuisanceFactor);
 		    calNull.addExpectedNumbers(maximizedNuisanceFactor,calNuisanceSignal);
 		}
@@ -154,8 +193,10 @@ public class ModelTestByPoissonBinnedLikelihoodFactory {
 	}
 
 	if(runReplicaExperiment){
-	    llhNull = calNull.runReplicaExperiment();
-	    calNull.useTheResultsByTheReplicaExperiment();
+	    do{
+		llhNull = calNull.runReplicaExperiment();
+		calNull.useTheResultsByTheReplicaExperiment();
+	    }while(conditioning && (llhNull<= llhThresholdInConditioning));
 	    //System.out.format("observed sum of null hypothesis=%d\n",calNull.getSumOfObservedValues());
 	}else{
 	    calNull.useTheResultsByTheRealExperiment();
@@ -341,7 +382,8 @@ public class ModelTestByPoissonBinnedLikelihoodFactory {
 	double nuisanceSignalFactorSearchRangeMax = 2.0*nuisanceSignalFactor;
 	if(totalObs<=0) nuisanceSignalFactorSearchRangeMax = 0.1*totalNuisanceSIG;
 	double deltaFactorNuisance = (nuisanceSignalFactorSearchRangeMax-nuisanceSignalFactorSearchRangeMin)/(double)nSteps;
-	//System.err.format(" total obs(%d) nuisance range max=%f\n",totalObs,nuisanceSignalFactorSearchRangeMax);
+	//System.err.format(" total obs(%d) total nuisance(%f) nuisance range max=%f\n",
+	//		  totalObs,totalNuisanceSIG,nuisanceSignalFactorSearchRangeMax);
 
 	double llhMin = Double.POSITIVE_INFINITY;
 	double signalFactorMin = 0.0;
@@ -355,6 +397,7 @@ public class ModelTestByPoissonBinnedLikelihoodFactory {
 		calHybrid.addExpectedNumbers(nuisanceSigFactorSearch,calNuisanceSignal);
 
 		double llhHybrid = calHybrid.getLikelihood();
+		//System.out.format("logging %e %e %e\n",sigFactorSearch,nuisanceSigFactorSearch,llhHybrid);
 		if(llhHybrid < llhMin){
 		    llhMin = llhHybrid;
 		    signalFactorMin = sigFactorSearch;
@@ -404,11 +447,7 @@ public class ModelTestByPoissonBinnedLikelihoodFactory {
        Calculated by buildLikelihoodForHybridHypothesis(boolean useTheResultsOfReplicaExperiment)
      */
     public double getNuisanceNormalizationToMaximizeLikelihood(){
-	if(builtAlterHypothesisLikelihood) return maximizedNuisanceFactor;
-	else{
-	    System.err.println("call buildLikelihoodForAlternativeHypothesis");
-	    return -1.0;
-	}
+	return maximizedNuisanceFactor;
     }
 
 

@@ -52,6 +52,7 @@ public class PoissonBinnedLikelihoodMapBuilder {
     private boolean rebinned = false;
 
     private boolean noObservedEvent = false;
+    private boolean runReplicaExperiment = false;
 
     /** number of observed events  */
     public final static int numberOfObservedEvents = 2;
@@ -282,7 +283,17 @@ public class PoissonBinnedLikelihoodMapBuilder {
 		PoissonBinnedLikelihoodCalculator cal = new PoissonBinnedLikelihoodCalculator();
 		cal.copyPoissonBinnedDataMap(realDataMap);
 
-		pblMap.put(cal,parametersMap);
+		if(!runReplicaExperiment){
+		    pblMap.put(cal,parametersMap);
+		}else{
+		    PoissonBinnedLikelihoodCalculator calReplica = new PoissonBinnedLikelihoodCalculator();
+		    calReplica.copyPoissonBinnedDataMap(realDataMap);
+		    cal.runReplicaExperiment();
+		    cal.useTheResultsByTheReplicaExperiment();
+		    calReplica.copyObservedNumbers(cal);
+		    pblMap.put(calReplica,parametersMap);
+		}
+
 
             }catch (EOFException e){
                 buffer = null;
@@ -345,8 +356,9 @@ public class PoissonBinnedLikelihoodMapBuilder {
 	boolean useNPEbin = true;
 	boolean rebinned = false;
 	boolean noObservedEvent = false;
+	boolean runReplicaExperiment = false;
         if(args.length<2){
-            System.out.println("Usage: PoissonBinnedLikelihoodMapBuilder NPEbin(yes 1 no 0 rebin 2) filename-to-output-BinnedLikelohoodMap (0 if power law) (0 if no observed events - debugging)");
+            System.out.println("Usage: PoissonBinnedLikelihoodMapBuilder NPEbin(yes 1 no 0 rebin 2) filename-to-output-BinnedLikelohoodMap (0 if power law) (0 if no observed events, 1 no observed event and run replica- debugging)");
             System.exit(0);
         }else {
 	    int index = Integer.valueOf(args[0]).intValue();
@@ -362,7 +374,12 @@ public class PoissonBinnedLikelihoodMapBuilder {
 	    }
             outFileName = args[1];
 	    if(args.length>=3) isGZK = false;
-	    if(args.length==4) noObservedEvent = true;
+	    if(args.length==4){
+		noObservedEvent = true;
+		if(Integer.valueOf(args[3]).intValue()==1){
+		    runReplicaExperiment = true;
+		}
+	    }
 	}
  	PoissonBinnedLikelihoodMapBuilder builder = new PoissonBinnedLikelihoodMapBuilder(useNPEbin,rebinned);
 	if(!isGZK){
@@ -371,6 +388,10 @@ public class PoissonBinnedLikelihoodMapBuilder {
 	    if(noObservedEvent){
 		System.err.println("null events observed case");
 		builder.noObservedEvent = noObservedEvent;
+		if(runReplicaExperiment){
+		    System.err.println("run replica experiment and put it back to realdata map");
+		    builder.runReplicaExperiment = runReplicaExperiment;
+		}
 	    }
 	}
 

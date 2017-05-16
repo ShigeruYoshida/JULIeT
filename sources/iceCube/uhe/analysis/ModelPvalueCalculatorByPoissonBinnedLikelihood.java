@@ -37,24 +37,36 @@ public class ModelPvalueCalculatorByPoissonBinnedLikelihood {
 	boolean includeNuisance = false;
 	boolean runReplicaExperiment = false;
 	boolean DataIsMap = false;
+	/** A fixed fraction of the nuisance signal fitted by the data is used in
+	    the UL calculation, instead of using  the bestfit nuisance signal itself,
+	    in the null hypoethesis  */
+	boolean useFractionOfBestFitNuisanceSignal = false;
 	int likelihoodRatioType = 2;
+	double nuisanceMultiplier = 1.0;
 
         String sigEventRateFileName = null;
         String nuisanceSigEventRateFileName = null;
         String bgEventRateFileName = null;
 
         if(args.length<3){
-            System.out.println("Usage: ModelPvalueCalculatorByPoissonBinnedLikelihood filename-to-read-BGdata filename-to-read-SIGdata DataIsMap(yes 1 no 0) (filename-E2-Map as nuisance)");
+            System.out.println("Usage: ModelPvalueCalculatorByPoissonBinnedLikelihood filename-to-read-BGdata filename-to-read-SIGdata DataIsMap(yes 1 no 0) (filename-E2-Map as nuisance) (nuisanceMultiplier)");
             System.exit(0);
         }else {
             bgEventRateFileName = args[0];
             sigEventRateFileName = args[1];
 	    int index = Integer.valueOf(args[2]).intValue();
 	    if(index == 1)  DataIsMap = true;
-	    if(args.length==4){
+	    if(args.length>=4){
 		includeNuisance = true;
 		nuisanceSigEventRateFileName = args[3];
 		likelihoodRatioType = 6;
+		if(args.length >= 5){
+		    useFractionOfBestFitNuisanceSignal = true;
+		    nuisanceMultiplier = Double.valueOf(args[4]).doubleValue();
+		    System.err.format("  the bestfit nuisance flux multiplied by %f is used in the null hypothesis",
+				      nuisanceMultiplier);
+		}
+
 	    }
 	}
 	System.err.format(" likelihood ratio type = %d\n",likelihoodRatioType);
@@ -142,6 +154,11 @@ public class ModelPvalueCalculatorByPoissonBinnedLikelihood {
 	// fiest the real data
 	runReplicaExperiment = false;
 	double llhNull = testFactory.buildLikelihoodForNullHypothesis(runReplicaExperiment);
+	double  maximizedNuisanceFactor = 0.0;
+	if(includeNuisance) {
+	    maximizedNuisanceFactor = testFactory.getNuisanceNormalizationToMaximizeLikelihood();
+	    System.err.format("nuisance normalization to maximize llh in null hypothesis %e\n",maximizedNuisanceFactor);
+	}
 	double llhSignalFloated = 0.0;
 	double  maximizedFactor = 0.0;
 	if(!includeNuisance){    
@@ -162,6 +179,13 @@ public class ModelPvalueCalculatorByPoissonBinnedLikelihood {
 	//
 	// calculate the llhRatio distribution by running pseudo-experiments 
 	//
+	if(useFractionOfBestFitNuisanceSignal && includeNuisance){
+	    testFactory = null;
+	    testFactory = new ModelTestByPoissonBinnedLikelihoodFactory(calBG, calSignal, calNuisanceSignal);
+	    testFactory.doNotFloatNuisanceInNullHypothesis();
+	    testFactory.nuisanceSignalFixedMultiplier = nuisanceMultiplier*maximizedNuisanceFactor;
+	    llhNull = testFactory.buildLikelihoodForNullHypothesis(runReplicaExperiment);
+	}
 	int runTimes = 500000;
 	if(includeNuisance) runTimes = 1000;
 	testFactory.makeCollectionOfLogLikelihoodRatio(likelihoodRatioType,runTimes);
