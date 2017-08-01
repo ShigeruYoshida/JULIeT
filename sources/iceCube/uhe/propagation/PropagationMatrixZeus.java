@@ -13,8 +13,8 @@ PropagationMatrix using the Zeus based neutrino-nucleon cross section
 
 public class PropagationMatrixZeus extends PropagationMatrix {
 
-    protected static String nuCCMtxObjectFile = "ENeutrinoChargeZeusMtx";
-    protected static String nuNCMtxObjectFile = "ENeutrinoNeutralZeusMtx";
+    protected static String nuCCMtxObjectFile = "ENeutrinoChargeZeusNewMtx";
+    protected static String nuNCMtxObjectFile = "ENeutrinoNeutralZeusNewMtx";
 
     public PropagationMatrixZeus(Particle nuE, Particle nuMu, Particle nuTau,
                              Particle e,   Particle mu,   Particle tau,
