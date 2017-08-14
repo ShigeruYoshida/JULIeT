@@ -54,6 +54,7 @@ public class RunJuliet4Gen2 {
 	RandomGenerator rand = new RandomGenerator();
 
 	// generate RunManager object
+	JulietEventGenerator4Gen2.neutrinoCSHERAZeus = true;
 	JulietEventGenerator4Gen2 generator = 
 	    new  JulietEventGenerator4Gen2(flavorID, doubletID, energy, mediumID,
 					   doCC, doNC, doMuBrems, doTauBrems,

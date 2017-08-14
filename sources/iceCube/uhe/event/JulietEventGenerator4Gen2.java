@@ -131,19 +131,19 @@ public class JulietEventGenerator4Gen2 {
 
     /** Neutrino interaction matrix name */ // for IceCube-Gen2
     private static String eNuCCMtxObjectCCH5File = "ENeutrinoChargeMtx";
-    private static String eNuCCMtxObjectZeusFile = "ENeutrinoChargeZeusMtx";
+    private static String eNuCCMtxObjectZeusFile = "ENeutrinoChargeZeusNewMtx";
     private static String muNuCCMtxObjectCCH5File = "MuNeutrinoChargeMtx";
-    private static String muNuCCMtxObjectZeusFile = "MuNeutrinoChargeZeusMtx";
+    private static String muNuCCMtxObjectZeusFile = "MuNeutrinoChargeZeusNewMtx";
     private static String tauNuCCMtxObjectCCH5File = "TauNeutrinoChargeMtx";
-    private static String tauNuCCMtxObjectZeusFile = "TauNeutrinoChargeZeusMtx";
+    private static String tauNuCCMtxObjectZeusFile = "TauNeutrinoChargeZeusNewMtx";
 
     private static String eNuNCMtxObjectCCH5File = "ENeutrinoNeutralMtx";
-    private static String eNuNCMtxObjectZeusFile = "ENeutrinoNeutralZeusMtx";
+    private static String eNuNCMtxObjectZeusFile = "ENeutrinoNeutralZeusNewMtx";
     private static String muNuNCMtxObjectCCH5File = "MuNeutrinoNeutralMtx";
-    private static String muNuNCMtxObjectZeusFile = "MuNeutrinoNeutralZeusMtx";
+    private static String muNuNCMtxObjectZeusFile = "MuNeutrinoNeutralZeusNewMtx";
     private static String tauNuNCMtxObjectCCH5File = "TauNeutrinoNeutralMtx";
-    private static String tauNuNCMtxObjectZeusFile = "TauNeutrinoNeutralZeusMtx";
-    public boolean neutrinoCSHERAZeus = true; // neutrino HERA-Zeus-PDF based cross section
+    private static String tauNuNCMtxObjectZeusFile = "TauNeutrinoNeutralZeusNewMtx";
+    public static boolean neutrinoCSHERAZeus = true; // neutrino HERA-Zeus-PDF based cross section
 
     /** Random Generator */
     RandomGenerator rand;

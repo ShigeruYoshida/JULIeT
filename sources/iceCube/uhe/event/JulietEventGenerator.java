@@ -119,6 +119,22 @@ public class JulietEventGenerator {
     String interactionsMatrixDirectoryInRock = "iceCube/uhe/interactions/rock/";
     String interactionsMatrixDirectory;
 
+    /** Neutrino interaction matrix name */ // for IceCube-Gen2
+    private static String eNuCCMtxObjectCCH5File = "ENeutrinoChargeMtx";
+    private static String eNuCCMtxObjectZeusFile = "ENeutrinoChargeZeusNewMtx";
+    private static String muNuCCMtxObjectCCH5File = "MuNeutrinoChargeMtx";
+    private static String muNuCCMtxObjectZeusFile = "MuNeutrinoChargeZeusNewMtx";
+    private static String tauNuCCMtxObjectCCH5File = "TauNeutrinoChargeMtx";
+    private static String tauNuCCMtxObjectZeusFile = "TauNeutrinoChargeZeusNewMtx";
+
+    private static String eNuNCMtxObjectCCH5File = "ENeutrinoNeutralMtx";
+    private static String eNuNCMtxObjectZeusFile = "ENeutrinoNeutralZeusNewMtx";
+    private static String muNuNCMtxObjectCCH5File = "MuNeutrinoNeutralMtx";
+    private static String muNuNCMtxObjectZeusFile = "MuNeutrinoNeutralZeusNewMtx";
+    private static String tauNuNCMtxObjectCCH5File = "TauNeutrinoNeutralMtx";
+    private static String tauNuNCMtxObjectZeusFile = "TauNeutrinoNeutralZeusNewMtx";
+    public static boolean neutrinoCSHERAZeus = true; // neutrino HERA-Zeus-PDF based cross section
+
     /** Random Generator */
     RandomGenerator rand;
 
@@ -336,32 +352,62 @@ public class JulietEventGenerator {
 
         // Charged Current Interactions [yes(1)/no(0)/allFlavor(2)]
         if(doCC == 1){
-            if(primaryFlavor==0) {matrixName = "ENeutrinoChargeMtx"; electronBaseFlag = 1;} 
-            else if(primaryFlavor==1) matrixName = "MuNeutrinoChargeMtx";
-            else if(primaryFlavor==2) matrixName = "TauNeutrinoChargeMtx";
+	    if(!neutrinoCSHERAZeus){
+		if(primaryFlavor==0) {matrixName = eNuCCMtxObjectCCH5File; electronBaseFlag = 1;} 
+		else if(primaryFlavor==1) matrixName = muNuCCMtxObjectCCH5File;
+		else if(primaryFlavor==2) matrixName = tauNuCCMtxObjectCCH5File;
+	    }else{
+		if(primaryFlavor==0) {matrixName = eNuCCMtxObjectZeusFile; electronBaseFlag = 1;} 
+		else if(primaryFlavor==1) matrixName = muNuCCMtxObjectZeusFile;
+		else if(primaryFlavor==2) matrixName = tauNuCCMtxObjectZeusFile;
+	    }
             fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
         }else if(doCC == 2){
-            matrixName = "ENeutrinoChargeMtx"; electronBaseFlag = 1;
-            fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
-            matrixName = "MuNeutrinoChargeMtx";
-            fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
-            matrixName = "TauNeutrinoChargeMtx";
-            fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+	    if(!neutrinoCSHERAZeus){
+		matrixName = eNuCCMtxObjectCCH5File; electronBaseFlag = 1;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+		matrixName = muNuCCMtxObjectCCH5File;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+		matrixName = tauNuCCMtxObjectCCH5File;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+	    }else{
+		matrixName = eNuCCMtxObjectZeusFile; electronBaseFlag = 1;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+		matrixName = muNuCCMtxObjectZeusFile;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+		matrixName = tauNuCCMtxObjectZeusFile;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+	    }
         }
 
         // Neutral Current Interactions [yes(1)/no(0)/allFlavor(2)]
         if(doNC == 1){
-            if(primaryFlavor==0) matrixName      = "ENeutrinoNeutralMtx";
-            else if(primaryFlavor==1) matrixName = "MuNeutrinoNeutralMtx";
-            else if(primaryFlavor==2) matrixName = "TauNeutrinoNeutralMtx";
+	    if(!neutrinoCSHERAZeus){
+		if(primaryFlavor==0) matrixName      = eNuNCMtxObjectCCH5File;
+		else if(primaryFlavor==1) matrixName = muNuNCMtxObjectCCH5File;
+		else if(primaryFlavor==2) matrixName = tauNuNCMtxObjectCCH5File;
+	    }else{
+		if(primaryFlavor==0) matrixName      = eNuNCMtxObjectZeusFile;
+		else if(primaryFlavor==1) matrixName = muNuNCMtxObjectZeusFile;
+		else if(primaryFlavor==2) matrixName = tauNuNCMtxObjectZeusFile;
+	    }
             fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
         }else if(doNC == 2){
-            matrixName = "ENeutrinoNeutralMtx";
-            fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
-            matrixName = "MuNeutrinoNeutralMtx";
-            fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
-            matrixName = "TauNeutrinoNeutralMtx";
-            fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+	    if(!neutrinoCSHERAZeus){
+		matrixName = eNuNCMtxObjectCCH5File;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+		matrixName = muNuNCMtxObjectCCH5File;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+		matrixName = tauNuNCMtxObjectCCH5File;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+	    }else{
+		matrixName = eNuNCMtxObjectZeusFile;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+		matrixName = muNuNCMtxObjectZeusFile;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+		matrixName = tauNuNCMtxObjectZeusFile;
+		fileName[n++]= interactionsMatrixDirectory.concat(matrixName);
+	    }
         }
 
         // Muon Bremsstrahlung [yes(1)/no(0)]
