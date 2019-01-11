@@ -28,12 +28,18 @@ public class IceCubeCoordinate extends EarthLocalCoordinate {
     double glacierDepth = 2.829903408e5;
     
 
+    /** origin of the coordinate */
+    public static double origin_x = -easting;
+    public static double origin_y = northing;
+    public static double origin_r = EarthCenterCoordinate.REarth+elevation;
+    public static double origin_z = -Math.sqrt(origin_r*origin_r-origin_x*origin_x-origin_y*origin_y);
+
+    
     /** constructor. */ 
     public IceCubeCoordinate(){
 	// Point z axis to the earth surface from the IceCube coordinate origin.
 	// No aditional rotation for the moment
-	super(new J3Vector(-easting,northing,
-			   -(EarthCenterCoordinate.REarth+elevation)));
+	super(new J3Vector(origin_x,origin_y,origin_z));
 	// Calculate the rotaion angle around the z-axis
 	// rotate x-y plane so that the new y axis 
 	// has no ex_earthCenter compoment. This operation results in
