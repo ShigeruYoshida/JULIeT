@@ -66,7 +66,7 @@ public class DrawCRFlux {
 
        System.out.println("titx E[GeV]");
        System.out.println("tity log (Flux E^2 [GeV cm^-2 sec^-1 sr^-1])");
-       System.out.println("scal 1.0e6 1.0e8 1.0e-7 3.0e-4");
+       System.out.println("scal 1.0e6 1.0e11 1.0e-10 3.0e-4");
        System.out.println("gwin 0.4 0.9 0.2 0.9");
        System.out.println("logx");
        System.out.println("logy");

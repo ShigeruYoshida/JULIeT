@@ -68,6 +68,7 @@ public class MakeJuliet4Gen2JaidaTree {
 	RandomGenerator rand = new RandomGenerator();
 
 	// generate RunManager object
+	JulietEventGenerator4Gen2.neutrinoCSHERAZeus = false;
 	JulietEventGenerator4Gen2 generator = 
 	    new  JulietEventGenerator4Gen2(flavorID, doubletID, energy, mediumID,
 					   doCC, doNC, doMuBrems, doTauBrems,
@@ -106,6 +107,26 @@ public class MakeJuliet4Gen2JaidaTree {
 	    jaidaHistoFactory.createHistogram3D(endHistName,dimensionX,minX*cm2m,maxX*cm2m,
 						dimensionY,minY*cm2m,maxY*cm2m,dimensionZ,minZ*cm2m,maxZ*cm2m);
 
+	String distanceHistName = "propagationDistanceNadir";
+	double distanceMin = 0.0; // [cm]
+	double distanceMax = EarthCenterCoordinate.REarth; // [cm]
+	int dimensionDistance = (int )((distanceMax-distanceMin)/deltaDistance + epsilon);
+	double nadirInDegMin = 90.0;
+	double nadirInDegMax = 180.0;
+	double deltaDeg = 5.0;
+	int dimensionNadir = (int )((nadirInDegMax-nadirInDegMin)/deltaDeg + epsilon);
+	String distanceEnergyHistName = "propagationDistanceEnergy";
+	double relativeEnergyDepositMin = 0.0;
+	double relativeEnergyDepositMax = 1.0;
+        IHistogram2D distanceNadirHist =
+	    jaidaHistoFactory.createHistogram2D(distanceHistName,dimensionDistance,
+						distanceMin,distanceMax,
+						dimensionNadir,nadirInDegMin,nadirInDegMax);
+        IHistogram2D distanceEnergyHist =
+	    jaidaHistoFactory.createHistogram2D(distanceEnergyHistName,dimensionDistance,
+						distanceMin,distanceMax,
+						50,relativeEnergyDepositMin,relativeEnergyDepositMax);
+
 
 
 	//
@@ -117,8 +138,6 @@ public class MakeJuliet4Gen2JaidaTree {
 
 	    double nadirAngleInDeg = 180.0*rand.GetRandomDouble(); // [Deg]
 	    double azimuthAngleInDeg = 360.0*rand.GetRandomDouble(); // [Deg]
-	    System.out.format("event %d nadir %f azimuth %f\n",
-			      trial,nadirAngleInDeg,azimuthAngleInDeg);
 
 	    double nadirAngle = Math.toRadians(nadirAngleInDeg);
 	    double azimuthAngle =  Math.toRadians(azimuthAngleInDeg);
@@ -174,6 +193,8 @@ public class MakeJuliet4Gen2JaidaTree {
 
 	    injectionXYZ.fill(startPosition_ice3.getX()*cm2m,startPosition_ice3.getY()*cm2m,
 			      startPosition_ice3.getZ()*cm2m);
+	    if(nadirAngleInDeg>=90.0)
+	    	distanceNadirHist.fill(distanceFromEarthSurface,nadirAngleInDeg);
 
 	    //  end position in ice3 coordinate
 	    J3Vector endPosition_ice3 = generator.wherePrimaryParticleEndsInIceCubeCoordinate();
@@ -183,7 +204,9 @@ public class MakeJuliet4Gen2JaidaTree {
 	    endXYZ.fill(endPosition_ice3.getX()*cm2m,endPosition_ice3.getY()*cm2m,
 			      endPosition_ice3.getZ()*cm2m);
 
+
 	    // secondary particles
+	    double energyDeposit = 0.0;
 	    while(particleLocationIterator.hasNext()){
 		Particle particle = (Particle )(particleIterator.next());
 		String particleName = particle.particleName(particle.getFlavor(),
@@ -195,7 +218,17 @@ public class MakeJuliet4Gen2JaidaTree {
 		double z = r.getZ();
 		double w = cascade_energy/energy;
 		cascadeXYZ.fill(x*cm2m,y*cm2m,z*cm2m,w);
+		energyDeposit += cascade_energy;
 	    }
+	    energyDeposit = energyDeposit/energy;
+
+	    if(nadirAngleInDeg>=90.0)
+	    	distanceEnergyHist.fill(distanceFromEarthSurface,energyDeposit);
+
+
+	    System.out.format("event %d nadir %f azimuth %f propDistance %e distanceFromSurface %e relariveEloss %f\n",
+			      trial,nadirAngleInDeg,azimuthAngleInDeg,propagationDistance,
+			      distanceFromEarthSurface,energyDeposit);
 
 	    trial++;
 	}

@@ -23,7 +23,7 @@ public class InteractionsBase extends MonteCarloBase {
     private double logEnergyMinimum = Particle.getLogEnergyMinimum();
 
     /** Minimum log energy of produced particles */
-    private static final double initialLogEnergyProducedMinimum = 1.0;
+    static final double initialLogEnergyProducedMinimum = 1.0;
     private double logEnergyProducedMinimum = initialLogEnergyProducedMinimum; 
 
     /** In order to save CPU time, we increase neutrino cross section by
@@ -37,12 +37,12 @@ public class InteractionsBase extends MonteCarloBase {
     public static int neutrinoFactor = 1;
 
     /** dimension of InteractionsMatrix */
-    private int dim         = Particle.getDimensionOfLogEnergyMatrix();
-    private int expandedDim = dim + 
+    int dim         = Particle.getDimensionOfLogEnergyMatrix();
+    int expandedDim = dim + 
                     (int )((logEnergyMinimum-logEnergyProducedMinimum)/Particle.getDeltaLogEnergy());
 
     /** Cumulative cross section table */
-    private double[][] cumulativeTable = new double[dim][expandedDim];
+    double[][] cumulativeTable = new double[dim][expandedDim];
 
     /** Constructor for making the cumulative table. */
     public InteractionsBase(InteractionsMatrix intMtx){
@@ -58,59 +58,39 @@ public class InteractionsBase extends MonteCarloBase {
     /** Make a cumulative table of differential cross section. */
     private void setCumulativeTable(InteractionsMatrix interactMtx){
 
-        //make correction array 
-	double[] correctionArray;
-	correctionArray = new double[dim];
-	int iLogEmax    = dim-1;
-
-	for(int jLogE=0; jLogE<dim; jLogE++){
-	    correctionArray[jLogE] = interactMtx.getTransferMatrix(iLogEmax,jLogE);
-	}	
-
 	//make corrected table
 	double     correctedElement = 0.0; 
 	double[][] transferSigmaTable;
 	transferSigmaTable = new double[dim][expandedDim];
 
-	for(int iLogE=dim-1; iLogE>=0; iLogE--){
+	for(int iLogE=0; iLogE<dim; iLogE++){
 	    
-	    double  partialSigma = 0.0;
 	    for(int fLogE=0; fLogE<=iLogE; fLogE++){
 
-		int kLogE = fLogE + expandedDim-dim;
-
-		correctedElement                 = interactMtx.getTransferMatrix(iLogE,fLogE);
-		transferSigmaTable[iLogE][kLogE] = correctedElement;
+	    	int kLogE = fLogE + expandedDim-dim;
+	    	transferSigmaTable[iLogE][kLogE] = interactMtx.getTransferMatrix(iLogE,fLogE);
 		    
-		partialSigma += correctedElement;
-
 	    }
 
-	    double fraction = 0.0;
-	    for(int kLogE=(expandedDim-dim-(iLogEmax-iLogE)); kLogE<(expandedDim-dim); kLogE++){
-		fraction += correctionArray[kLogE+iLogEmax-iLogE-(expandedDim-dim)];
-	    }
-
-	    if(fraction>0.0){
-		double correctionFactor = (interactMtx.getSigmaMatrix(iLogE)-partialSigma)/fraction;
-		for(int kLogE=(expandedDim-dim-(iLogEmax-iLogE)); kLogE<(expandedDim-dim); kLogE++){
-		    int kSigmaLogE = kLogE;
-		    if(kLogE<0) kSigmaLogE = 0;
-		    transferSigmaTable[iLogE][kSigmaLogE] += 
-			correctionFactor*correctionArray[kLogE+iLogEmax-iLogE-(expandedDim-dim)];
-		}
-
-	    }
-
-	    // make correctionArray again with the iteration method
-	    for(int jLogE=0; jLogE<dim; jLogE++){
-		int kLogE = expandedDim-dim-(iLogEmax-iLogE)+jLogE;
-		if(kLogE>=0){
-		    correctionArray[jLogE] = transferSigmaTable[iLogE][kLogE];
+	    // now adding the lower energy region
+	    double delta = Particle.getDeltaLogEnergy();
+	    Interactions interactions = interactMtx.interactions;
+	    interactions.setIncidentParticleEnergy(iLogE);
+	    for(int fLogE=-(expandedDim-dim); fLogE<0; fLogE++){
+  	    //for(int fLogE=-(expandedDim-dim); fLogE<iLogE; fLogE++){
+		int kLogE = fLogE + expandedDim-dim;
+		double logY = delta*(double )(fLogE-iLogE);
+		double logYUp = logY+0.5*delta;
+		double yUpRange = Math.pow(10.0,logYUp);
+		double logYLow = logY-0.5*delta;
+		double yLowRange = Math.pow(10.0,logYLow);
+		if(yLowRange>=interactions.getYmin()+2.0*interactions.roundOffError){
+		    transferSigmaTable[iLogE][kLogE]=
+			interactions.integralDSigmaDy(yLowRange,yUpRange);
 		}else{
-		    correctionArray[jLogE] = 0.0;
+		    transferSigmaTable[iLogE][kLogE]=0.0;
 		}
-	    }	
+	    }
 
 	}
 
@@ -136,16 +116,6 @@ public class InteractionsBase extends MonteCarloBase {
 		for(int fLogE=0; fLogE<=kLogE; fLogE++){
 		    cumulativeTable[iLogE][kLogE] += transferSigmaTable[iLogE][fLogE];
 		}
-	    }
-
-	    // a minor correction for consinuous connection to 0
-	    int kLogE;
-	    for(kLogE=0; kLogE<expandedDim; kLogE++){
-		if(cumulativeTable[iLogE][kLogE]>0.0) break;
-	    }
-	    for(int fLogE=0; fLogE<kLogE; fLogE++){
-		cumulativeTable[iLogE][fLogE] = cumulativeTable[iLogE][kLogE]+
-		    cumulativeTable[iLogE][kLogE]*(double )(fLogE-kLogE)/(double )kLogE;
 	    }
 
 	}
@@ -239,7 +209,7 @@ public class InteractionsBase extends MonteCarloBase {
 	if(iLogE<0) iLogE = 0;
 	if(iLogE>=dim) iLogE = dim-1;
 	if(jLogE<0) jLogE = 0;
-	if(iLogE>=expandedDim) iLogE = expandedDim-1;
+	if(jLogE>=expandedDim) jLogE = expandedDim-1;
 
 	return cumulativeTable[iLogE][jLogE];
     }

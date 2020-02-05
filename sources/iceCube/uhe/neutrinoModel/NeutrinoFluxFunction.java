@@ -59,7 +59,7 @@ public class NeutrinoFluxFunction implements Function{
     //static double logFactor = Math.log(0.379/0.03);
 
     /** constants related to the ultra-high energy cosmic-ray propagation */
-    static double gzkSphere = 100.0*Mpc;
+    static double gzkSphere = 10.0*Mpc;
     static double gzkRatio = gzkSphere*H0/c;
 
     /** parameters regarding the ultrah-high energy cosmic ray flux */

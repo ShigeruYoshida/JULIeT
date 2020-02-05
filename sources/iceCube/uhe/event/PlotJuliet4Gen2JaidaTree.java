@@ -32,10 +32,14 @@ public class PlotJuliet4Gen2JaidaTree {
         String path2HistoCascade = "./cascadePosition";
         String path2HistoInjection = "./injectionPosition";
         String path2HistoEnd = "./endingPosition";
+	String path2HistoDistanceNadir = "./propagationDistanceNadir";
+	String path2HistoDistanceEnergy = "./propagationDistanceEnergy";
 	// retrive the hostograms
 	IHistogram3D cascadeXYZ = (IHistogram3D )jaidaJulietTree.find(path2HistoCascade);
 	IHistogram3D injectionXYZ = (IHistogram3D )jaidaJulietTree.find(path2HistoInjection);
 	IHistogram3D endXYZ = (IHistogram3D )jaidaJulietTree.find(path2HistoEnd);
+	IHistogram2D distanceNadir = (IHistogram2D )jaidaJulietTree.find(path2HistoDistanceNadir);
+	IHistogram2D distanceEnergy = (IHistogram2D )jaidaJulietTree.find(path2HistoDistanceEnergy);
 
 	//
 	// draw
@@ -104,6 +108,24 @@ public class PlotJuliet4Gen2JaidaTree {
 					  "hist2DStyle","colorMap");
 	plotterEndXZ.region(0).plot(jaidaHistoFactory.projectionXZ("In-Ice track-ending XZ projection",endXYZ));
 	plotterEndXZ.show();
+
+        IPlotter plotterDistanceNadir = plotterFactory.create("Distance from the surface Vs nadir angle");
+	IPlotterStyle styleDistanceNadir = plotterDistanceNadir.region(0).style();
+	JaidaPlotStyleSetter.setPlotStyle(styleDistanceNadir,
+					  "Distance[cm] ",
+					  "Nadir [deg] ",
+					  "hist2DStyle","colorMap");
+	plotterDistanceNadir.region(0).plot(distanceNadir);
+	plotterDistanceNadir.show();
+
+        IPlotter plotterDistanceEnergy = plotterFactory.create("Distance from the surface Vs Energy Deposit");
+	IPlotterStyle styleDistanceEnergy = plotterDistanceEnergy.region(0).style();
+	JaidaPlotStyleSetter.setPlotStyle(styleDistanceEnergy,
+					  "Distance[cm] ",
+					  "Energy Deposit [ratio] ",
+					  "hist2DStyle","colorMap");
+	plotterDistanceEnergy.region(0).plot(distanceEnergy);
+	plotterDistanceEnergy.show();
 
     }
 

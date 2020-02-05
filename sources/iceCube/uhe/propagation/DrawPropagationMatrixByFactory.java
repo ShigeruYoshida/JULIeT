@@ -7,6 +7,8 @@ import java.io.*;
 public class DrawPropagationMatrixByFactory {
 
     static final double ln10 = Math.log(10.0);
+    static double logEnergyBase = Particle.getLogEnergyMinimum();
+    static double energyBase = Math.pow(10.0,logEnergyBase);
 
     public static void main(String[] args) throws IOException {
 
@@ -18,13 +20,16 @@ public class DrawPropagationMatrixByFactory {
 	int outputFlavor = 1;
 	int outputDoublet = 1;
 	boolean isInputE = true;
+	boolean withGlashowResonance = true;
+	boolean powerLawWeighted = false;
+	double gamma = 1.0;
 
 	PropagationMatrixFactory matrix = null;
 
 
         if(args.length<7){
             System.out.println(
-   "Usage: DrawPropagationMatrixByFactory file-name inFlavor inDoublet logE outFlavor outDoublet inputEnergy?(yes 1 no 0) (withoutGlashow - 0)");
+   "Usage: DrawPropagationMatrixByFactory file-name inFlavor inDoublet logE outFlavor outDoublet inputEnergy?(yes 1 no 0) (withoutGlashow - 0) (power law index)");
 	    System.exit(0);
         }else{
             fileName = args[0];
@@ -37,6 +42,17 @@ public class DrawPropagationMatrixByFactory {
 		isInputE = true;
 	    }else{
 		isInputE = false;
+	    }
+	    if(args.length>7){
+		if(Integer.valueOf(args[7]).intValue() == 0){
+		    withGlashowResonance = false;
+		    System.err.println(" matrix data with no Glasshow Resonance channels");
+		}
+	    }
+	    if(args.length>8){
+		gamma = Double.valueOf(args[8]).doubleValue();
+		powerLawWeighted = true;
+		System.err.println(" weighted by powerlaw spectrum with index of " + gamma);
 	    }
 		
         }
@@ -59,7 +75,7 @@ public class DrawPropagationMatrixByFactory {
 	// Instance of PropagationMatrixFactory
 	matrix = new PropagationMatrixFactory();
 	// Read the serialized object of the Neutrino Charged Interaction Matrix
-	if(args.length>7) matrix.whetherPropagationMatrixWithGlashowResonance(false);
+	if(!withGlashowResonance) matrix.whetherPropagationMatrixWithGlashowResonance(withGlashowResonance);
 	DataInputStream in = new DataInputStream(new FileInputStream(fileName));
 	matrix.readMatrix(in);
 	in.close( );
@@ -69,6 +85,7 @@ public class DrawPropagationMatrixByFactory {
 	System.out.println("tity Log Count");
 	System.out.println("scal 5.0 12.0 -15.0 1.0");
 
+	double sum_count = 0.0;
 	if(isInputE){
 	    double logEnergyOutput = Particle.getLogEnergyMinimum();
 	    while(logEnergyOutput <= 12.0){ // E < 10^12 GeV
@@ -76,6 +93,8 @@ public class DrawPropagationMatrixByFactory {
 		outputParticle.putLogEnergy(logEnergyOutput);
 		outputParticle.putEnergy(logEnergyOutput);
 		double count = matrix.getDF(inputParticle,outputParticle);
+		sum_count += count;
+		if(powerLawWeighted) count = count*Math.pow(energyInput/energyBase,-(gamma-1.0));
 		double logCount = -15.0;
 		if(count>0.0) logCount = Math.log(count)/ln10;
 		System.out.println("data " + logEnergyOutput + " 0.0 " +
@@ -89,6 +108,8 @@ public class DrawPropagationMatrixByFactory {
 		inputParticle.putLogEnergy(logEnergyInput);
 		inputParticle.putEnergy(logEnergyInput);
 		double count = matrix.getDF(inputParticle,outputParticle);
+		sum_count += count;
+		if(powerLawWeighted) count = count*Math.pow(energyInput/energyBase,-(gamma-1.0));
 		double logCount = -15.0;
 		if(count>0.0) logCount = Math.log(count)/ln10;
 		System.out.println("data " + logEnergyInput + " 0.0 " +
@@ -97,6 +118,7 @@ public class DrawPropagationMatrixByFactory {
 	    }
 	}
 
+	System.out.format("mssg sum(%6.3e)\n",sum_count);
 	System.out.println("join");
 	System.out.println("disp");
 	System.out.println("endg");
