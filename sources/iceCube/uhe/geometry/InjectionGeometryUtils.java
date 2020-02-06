@@ -16,10 +16,18 @@ import geometry.*;
  */
 public class InjectionGeometryUtils {
 
-    /** default radis of the cylinder radius */
-    public static double R_cylinder = 2.5e5; // 2,500 [m] = 2.5x10^5 [cm]. Default
-    /** default radis of the cylinder height */
-    public static double z_cylinder = 2.0*IceCubeGen2Coordinate.elevation;
+    /** default value of the cylinder radius for gen2 */
+    public static double R_cylinder_gen2 = 2.5e5; // 2,500 [m] = 2.5x10^5 [cm].
+    /** default value of the cylinder height for gen2 */
+    public static double z_cylinder_gen2 = 2.0*IceCubeGen2Coordinate.elevation;
+    /** default value of the cylinder radius for ARA */
+    public static double R_cylinder_ara = 5.5e5; // 5,500 [m] = 5.5x10^5 [cm].
+    /** default value of the cylinder height for ARA */
+    public static double z_cylinder_ara = 2.0*IceCubeARACoordinate.elevation ; // 2,800 [m] = 2.8x10^5 [cm].
+
+    public static double R_cylinder = R_cylinder_gen2; // for gen2
+    public static double z_cylinder = z_cylinder_gen2; // for gen2
+
 
     /**
        Calculate the radius of circle on which the juliet in-ice particles are injected
@@ -109,6 +117,16 @@ public class InjectionGeometryUtils {
     public static double getDefaultCylinderRadius(){return R_cylinder;}
     public static double getDefaultCylinderHeight(){return z_cylinder;}
 
+    public static void setGen2DimensionToDefaults(){
+	R_cylinder = R_cylinder_gen2; // for gen2
+	z_cylinder = z_cylinder_gen2; // for gen2
+    }
+	
+    public static void setARADimensionToDefaults(){
+	R_cylinder = R_cylinder_ara; // for ara
+	z_cylinder = z_cylinder_ara; // for ara
+    }
+
 
     /** Simple main method */
 
@@ -119,7 +137,15 @@ public class InjectionGeometryUtils {
 	while(theta<=180.0){
 	    double l = InjectionGeometryUtils.getDistanceOfStartLocation(Math.toRadians(theta));
 	    double R = InjectionGeometryUtils.getInjectionRadius(Math.toRadians(theta));
-	    System.out.format("theta(%4.1f [deg]) R=%6.1f[m] l=%6.1f[m]\n",theta,R*cm2m,l*cm2m);
+	    System.out.format("Gen2 theta(%4.1f [deg]) R=%6.1f[m] l=%6.1f[m]\n",theta,R*cm2m,l*cm2m);
+	    theta += 2.0; 
+	}
+	InjectionGeometryUtils.setARADimensionToDefaults();
+	theta = 0.0; // nadir angle
+	while(theta<=180.0){
+	    double l = InjectionGeometryUtils.getDistanceOfStartLocation(Math.toRadians(theta));
+	    double R = InjectionGeometryUtils.getInjectionRadius(Math.toRadians(theta));
+	    System.out.format("ARA theta(%4.1f [deg]) R=%6.1f[m] l=%6.1f[m]\n",theta,R*cm2m,l*cm2m);
 	    theta += 2.0; 
 	}
     }
