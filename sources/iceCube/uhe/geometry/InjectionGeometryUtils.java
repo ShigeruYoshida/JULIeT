@@ -23,7 +23,7 @@ public class InjectionGeometryUtils {
     /** default value of the cylinder radius for ARA */
     public static double R_cylinder_ara = 5.5e5; // 5,500 [m] = 5.5x10^5 [cm].
     /** default value of the cylinder height for ARA */
-    public static double z_cylinder_ara = 2.0*IceCubeARACoordinate.elevation ; // 2,800 [m] = 2.8x10^5 [cm].
+    public static double z_cylinder_ara = 2.0*IceCubeGen2Coordinate.ara_elevation ; // 2,800 [m] = 2.8x10^5 [cm].
 
     public static double R_cylinder = R_cylinder_gen2; // for gen2
     public static double z_cylinder = z_cylinder_gen2; // for gen2

@@ -24,6 +24,16 @@ public class IceCubeGen2Coordinate extends EarthLocalCoordinate {
 	9284.46ft */
     public static double elevation = IceCubeCoordinate.elevation;
 
+    /** Nothing of the origin in the horizontal plane. [cm] 52200' East */
+    public static double ara_northing = IceCubeCoordinate.northing - 9.23e4;
+
+    /** Easting of the origin in the horizontal plane. [cm] 46500' East*/
+    public static double ara_easting = IceCubeCoordinate.easting -3.345e5;
+
+    /** Elevation of the origin from earth ROCK surface (sea level). [cm] 
+	9284.46ft */
+    public static double ara_elevation = 1.4e5; 
+
     /** The depth of glacier. [cm]*/
     double glacierDepth = 2.829903408e5;
 
@@ -63,4 +73,47 @@ public class IceCubeGen2Coordinate extends EarthLocalCoordinate {
     public double getGlacierDepth(){
         return glacierDepth;
     }
+
+    /** Static method to swich the default parameters to those for ARA.
+	You have to call the constructor after this method, 
+	if you simulate the large volume including ARA 
+    */
+    public static void setARADimensionToDefaults(){
+	origin_x = -ara_easting;
+	origin_y = ara_northing;
+	origin_r = EarthCenterCoordinate.REarth+ara_elevation;
+	origin_z = -Math.sqrt(origin_r*origin_r-origin_x*origin_x-origin_y*origin_y);
+    }
+
+    /** Static method to swich the default parameters to those for gen2.
+	You have to call the constructor after this method, 
+	if you simulate the large volume including Gen2 
+    */
+    public static void setGen2DimensionToDefaults(){
+	origin_x = -gen2easting;
+	origin_y = gen2northing;
+	origin_r = EarthCenterCoordinate.REarth+elevation;
+	origin_z = -Math.sqrt(origin_r*origin_r-origin_x*origin_x-origin_y*origin_y);
+    }
+
+    /** Simple main method */
+
+    public static void main(String args[]) {
+	IceCubeGen2Coordinate gen2coordinate = new IceCubeGen2Coordinate();
+	double x = gen2coordinate.origin_x;
+	double y = gen2coordinate.origin_y;
+	double r = gen2coordinate.origin_r;
+	System.out.format("Gen2 coordinate origin x(%e) y(%e) r(%e)\n",x,y,r);
+	IceCubeGen2Coordinate.setARADimensionToDefaults();
+	x = gen2coordinate.origin_x;
+	y = gen2coordinate.origin_y;
+	r = gen2coordinate.origin_r;
+	System.out.format("ARA coordinate origin x(%e) y(%e) r(%e)\n",x,y,r);
+	IceCubeGen2Coordinate.setGen2DimensionToDefaults();
+	x = gen2coordinate.origin_x;
+	y = gen2coordinate.origin_y;
+	r = gen2coordinate.origin_r;
+	System.out.format("Gen2 coordinate origin x(%e) y(%e) r(%e)\n",x,y,r);
+    }
+ 
 }
