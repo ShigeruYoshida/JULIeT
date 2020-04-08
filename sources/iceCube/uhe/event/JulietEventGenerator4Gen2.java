@@ -21,6 +21,10 @@ import java.io.*;
    Ported JulietEventGenerator.java to run simulations for IceCube-Gen2.
    Written by S.Yoshida February 3 2016.
 
+   Added some functionalities to switch the injection volume & coordinates
+   to/from IceCube-gen2 from/to ARA. The default is for IceCube-Gen2.
+                      By S.Yoshida April 7, 2020.
+
    Below are the history of the original JulietEventGenerator class.
 
    Initial version written by Shigeru Yoshida November 28 2004.
@@ -80,11 +84,14 @@ public class JulietEventGenerator4Gen2 {
     /** IceCube coordinate */
     IceCubeCoordinate ice3Coordinate = null;
     EarthCenterCoordinate earthCoordinate = null;
-    IceCubeGen2Coordinate gen2Coordinate = null;  // for IceCube-Gen2
+    IceCubeGen2Coordinate gen2Coordinate = null;  
 
     /** IceCube Volume and IceCube outer volume */
     IceCubeVolume ice3Vol = null;
     Volume gen2OuterVol = null; // for IceCube-Gen2
+
+    /** Gen2/ara flag for setting up the injection volume and coordinates */
+    public static boolean simulateARA = false; // for IceCube-Gen2
 
     /** Starting location of incident particle.
 	For particlePoint/J3Line axislength. 
@@ -563,7 +570,16 @@ public class JulietEventGenerator4Gen2 {
         ice3Coordinate = new IceCubeCoordinate();
         earthCoordinate = new EarthCenterCoordinate();
         gen2Coordinate = new IceCubeGen2Coordinate();   // for IceCube-Gen2
-
+	if(simulateARA){                                // for ARA
+	    IceCubeGen2Coordinate.setARADimensionToDefaults();
+	    InjectionGeometryUtils.setARADimensionToDefaults();
+	    System.out.println("ARA coordinates and volume are set.");
+	}
+	System.out.format("coordinates origin (x y z)=(%e %e %e)\n",
+			   gen2Coordinate.origin_x,gen2Coordinate.origin_y,gen2Coordinate.origin_z);
+	System.out.format("Radius of the injection volume cylinder %e [cm]\n",
+			   InjectionGeometryUtils.R_cylinder);
+	
         // Generate the icecube volume
         ice3Vol = new IceCubeVolume();
 	// for IceCube-Gen2
@@ -679,7 +695,7 @@ public class JulietEventGenerator4Gen2 {
 	int doublet      :  doublet of the particle (c.f. Particle.java)
 	double energy    :  primary energy of the particle [GeV]
 	J3Line axis      :  geometry of the particle trajectory. Must be represented
-                            by the IceCubeCoordinate.
+                            by the IceCubeGen2Coordinate.
     */
     public void definePropagatingParticle(int flavor, int doublet,
 					  double energy, J3Line axis){
@@ -1225,6 +1241,13 @@ public class JulietEventGenerator4Gen2 {
 
 	return  InteractionsBase.neutrinoFactor;
 
+    }
+
+    /** Switch from gen2 setting (default) to ARA setting for larger volume/dedicated cooidinates.
+	This static method must be called before generating the JuLietEventGenerator4Gen2 object.
+     */
+    public static void setARADimensionToDefaults(){ // for IceCube-Gen2
+	simulateARA = true;
     }
 
 	

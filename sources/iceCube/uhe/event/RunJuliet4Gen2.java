@@ -38,8 +38,9 @@ public class RunJuliet4Gen2 {
 	int doubletID = 1;
 	double energy = 1.0e9; // [GeV]
 	int numberOfEvents = 10;
+	boolean simulateARA = false;
 
-	if(args.length!=4){
+	if(args.length<4){
             System.out.println("Usage: RunJulet2Gen2 flavorID doubletID number-of-events energy [GeV]");
             System.exit(0);
         }else{
@@ -47,6 +48,7 @@ public class RunJuliet4Gen2 {
             doubletID = Integer.valueOf(args[1]).intValue();
             numberOfEvents = Integer.valueOf(args[2]).intValue();
             energy = Double.valueOf(args[3]).doubleValue();
+	    if(args.length==5) simulateARA = true;
         }
 	System.err.format("(flavor doublet) = (%d %d) Energy=%e [GeV]\n",
 			  flavorID, doubletID, energy);
@@ -55,6 +57,7 @@ public class RunJuliet4Gen2 {
 
 	// generate RunManager object
 	JulietEventGenerator4Gen2.neutrinoCSHERAZeus = true;
+	if(simulateARA) JulietEventGenerator4Gen2.setARADimensionToDefaults();
 	JulietEventGenerator4Gen2 generator = 
 	    new  JulietEventGenerator4Gen2(flavorID, doubletID, energy, mediumID,
 					   doCC, doNC, doMuBrems, doTauBrems,
