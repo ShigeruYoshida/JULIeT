@@ -30,7 +30,7 @@ public class InteractionsLikelihood implements Function{
     int doubletID = 1;// particle doublet ID of the propagating particle
     private boolean whetherCheckParticleID = false;
     double logThresholdEnergy = InteractionsBaseLikelihood.logEnergyProducedMinimum;
-    static double yThreshold = 1.0e-5;
+    static double yThreshold = -5.0; // log_10(Y)
     boolean inelasticityBase = false;
     double perNucleonFactor = 1.0;
     boolean baseLikelihoodHasBeenAdded = false;

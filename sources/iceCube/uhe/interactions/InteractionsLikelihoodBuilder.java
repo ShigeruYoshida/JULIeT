@@ -34,11 +34,12 @@ public class InteractionsLikelihoodBuilder {
 						       double localDensity){
 
 	double logEthreshold = intLikelihood.logThresholdEnergy;
+	double yThreshold = Math.pow(10.0,intLikelihood.yThreshold);
 	double logLikelihoodValue = 0.0;
 	J3Vector r_start = new J3Vector();
 	r_start.putVector(startPosition_ice3);
 	double inIce_initial_energy = ((Particle )(trackIterator.next())).getEnergy();
-	//System.out.format("initial inice energy =%e log(threshold E)=%5.2f\n",inIce_initial_energy,logEthreshold);
+	//System.out.format("initial inice energy =%e threshold Y=%e\n",inIce_initial_energy,yThreshold);
 	double iniceEnergy = inIce_initial_energy;
 	double stochastic_int_pathLength = 0.0;
 	double iniceEnergy_stochastic = inIce_initial_energy;
@@ -57,7 +58,13 @@ public class InteractionsLikelihoodBuilder {
 	    iniceEnergy -= cascade_energy;
 	    r_start.putVector(r_end);
 
-	    if(logProducedEnergy> logEthreshold){ // Stochastic energy loss
+	    boolean thisIsStochasticLoss = false;
+	    if(!intLikelihood.inelasticityBase){
+		if(logProducedEnergy> logEthreshold)  thisIsStochasticLoss = true;
+	    }else{
+		if(cascade_energy > (yThreshold*iniceEnergy_stochastic))  thisIsStochasticLoss = true;
+	    }
+	    if(thisIsStochasticLoss){ // Stochastic energy loss
 		double logInIceEnergy = Math.log(iniceEnergy_stochastic)/ln10;
 		LikelihoodData likelihoodData =
 		    intLikelihood.getInteractionLikelihood(logInIceEnergy,logProducedEnergy,
@@ -75,6 +82,7 @@ public class InteractionsLikelihoodBuilder {
 	    }
 	}
 	if(ndf>0){
+	    System.out.format("ndf=%d\n",ndf);
 	    return logLikelihoodValue/(double)ndf;
 	}else{
 	    return Double.POSITIVE_INFINITY;

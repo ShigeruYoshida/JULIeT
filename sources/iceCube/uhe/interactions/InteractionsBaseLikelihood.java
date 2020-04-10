@@ -119,8 +119,11 @@ public class InteractionsBaseLikelihood extends InteractionsBase implements Func
 	    }
 	}
 	System.err.println(".");
-	System.err.format("...interactions to create cascades below %e [GeV] are calculated as continuous processes\n",
-			  Math.pow(10.0, logThresholdEnergy));
+	if(!inelasticityBase)
+	    System.err.format("...interactions to create cascades below %e [GeV] are calculated as continuous processes\n",  Math.pow(10.0, logThresholdEnergy));
+	else
+	    System.err.format("...interactions to create cascades below Y = %e are calculated as continuous processes\n",  yThreshold);
+
     }
     
    
