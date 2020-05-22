@@ -505,10 +505,10 @@ public class PropagatingNeutrinoFlux {
 		count += nuflux_osci[0]*FnuEToMu[iLogE][jLogE]; // nuE to Mu
 	    }
 	    /** For Glashow Resonance -end **/
-	    if(FnuMuToNuE[iLogE][jLogE]>0.0){
+	    if(FnuMuToMu[iLogE][jLogE]>0.0){
 		count += nuflux_osci[1]*FnuMuToMu[iLogE][jLogE]; // nuMu to Mu
 	    }
-	    if(FnuTauToNuE[iLogE][jLogE]>0.0){
+	    if(FnuTauToMu[iLogE][jLogE]>0.0){
 		count += nuflux_osci[2]*FnuTauToMu[iLogE][jLogE]; // nuTau to Mu
 	    }
 	}
@@ -584,10 +584,10 @@ public class PropagatingNeutrinoFlux {
 		count += nuflux_osci[0]*FnuEToTau[iLogE][jLogE]; // nuE to Mu
 	    }
 	    /** For Glashow Resonance -end **/
-	    if(FnuMuToNuE[iLogE][jLogE]>0.0){
+	    if(FnuMuToTau[iLogE][jLogE]>0.0){
 		count += nuflux_osci[1]*FnuMuToTau[iLogE][jLogE]; // nuMu to Tau
 	    }
-	    if(FnuTauToNuE[iLogE][jLogE]>0.0){
+	    if(FnuTauToTau[iLogE][jLogE]>0.0){
 		count += nuflux_osci[2]*FnuTauToTau[iLogE][jLogE]; // nuTau to Tau
 	    }
 	}
