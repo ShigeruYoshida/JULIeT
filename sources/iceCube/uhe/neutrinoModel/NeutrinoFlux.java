@@ -256,10 +256,6 @@ public class NeutrinoFlux implements Function{
             dataFile = "iceCube/uhe/neutrinoModel/gzk_fermi18_5_max.data";
 	    dataNumber = 73;
 	    numberOfFlavor = 1;
-        }else if(model==19){ // GZK Neutrino (by Francis) m=5.35 Zmax=2 gamma=2.28 Emax=1ZeV
-            dataFile = "iceCube/uhe/neutrinoModel/gzk_fermi18_5_max.data";
-	    dataNumber = 73;
-	    numberOfFlavor = 1;
         }else if(model==20){ // GZK Neutrino (by Francis) m=2.0 Zmax=2 gamma=2.63 Emax=1ZeV
             dataFile = "iceCube/uhe/neutrinoModel/gzk_fermi18_5_min.data";
 	    dataNumber = 73;
@@ -468,17 +464,28 @@ public class NeutrinoFlux implements Function{
 	if(numberOfFlavor!=1 && numberOfFlavor<3 && particleID == 3) return 0.0;
 
 	double EFlux;
-	if(numberOfFlavor==1){ // Already assuming oscillation
-	    EFlux = 
-	    Interpolation.mThPolynominalInterpolate(logEArray[0],
-	    EFluxArray[0],dataNumber,logEnergy,4);
-	}else{
+  if(numberOfFlavor==1){ // Already assuming oscillation
+      if(logEnergy < logEArray[0][0] || logEnergy > logEArray[0][dataNumber-1]){
+        return 0.0;
+      }
+      EFlux = 
+      Interpolation.mThPolynominalInterpolate(logEArray[0],
+      EFluxArray[0],dataNumber,logEnergy,6);
+  }else{
+      if(logEnergy < logEArray[particleID-1][0] ||
+         logEnergy > logEArray[particleID-1][dataNumber-1]){
+        return 0.0;
+      }
 	    EFlux = 
 	    Interpolation.mThPolynominalInterpolate(logEArray[particleID-1],
-	    EFluxArray[particleID-1],dataNumber,logEnergy,4);
+	    EFluxArray[particleID-1],dataNumber,logEnergy,6);
 	}
 	
 	double flux = EFlux*1.0e-9;
+
+  // Sometimes interpolation leads to negative fluxes at the edge or outside
+  // of the defined energy range. Make sure to not return negative fluxes
+  if(flux < 0.0) return 0.0;
 
 	return(flux);
     }
@@ -510,20 +517,31 @@ public class NeutrinoFlux implements Function{
 	    return (efluxPowerLaw*powerLawTerm*bzCutOffTerm/energyBase*ln10);
 	}
 
-	double EFlux;
-	if(numberOfFlavor==1){ // Already assuming oscillation
-	    EFlux = 
-	    Interpolation.mThPolynominalInterpolate(logEArray[0],
-	    EFluxArray[0],dataNumber,logEnergy,4);
-	}else{
-	    EFlux = 
-	    Interpolation.mThPolynominalInterpolate(logEArray[particleID-1],
-	    EFluxArray[particleID-1],dataNumber,logEnergy,4);
-	}
+  double EFlux;
+  if(numberOfFlavor==1){ // Already assuming oscillation
+      if(logEnergy < logEArray[0][0] || logEnergy > logEArray[0][dataNumber-1]){
+        return 0.0;
+      }
+      EFlux = 
+      Interpolation.mThPolynominalInterpolate(logEArray[0],
+      EFluxArray[0],dataNumber,logEnergy,6);
+  }else{
+      if(logEnergy < logEArray[particleID-1][0] ||
+         logEnergy > logEArray[particleID-1][dataNumber-1]){
+        return 0.0;
+      }
+      EFlux = 
+      Interpolation.mThPolynominalInterpolate(logEArray[particleID-1],
+      EFluxArray[particleID-1],dataNumber,logEnergy,6);
+  }
 
 
 	double energy = Math.pow(10.0,logEnergy+9.0); // [eV]
 	double flux = EFlux/energy*ln10;
+
+  // Sometimes interpolation leads to negative fluxes at the edge or outside
+  // of the defined energy range. Make sure to not return negative fluxes
+  if(flux < 0.0) return 0.0;
 
 	return(flux);
     }
