@@ -74,7 +74,7 @@ public class MakeJuliet4Gen2JaidaTree {
 					   doCC, doNC, doMuBrems, doTauBrems,
 					   doMuKnock, doTauKnock, doMu2e, doTau2e,
 					   doMu2mu, doTau2mu, doMu2tau, doTau2tau,
-					   doMuPN, doTauPN, doGR, doMuDecay, doTauDecay,posID);
+					   doMuPN, doTauPN, doGR, doMuDecay, doTauDecay, posID);
 
 	// Jaida FreeHep objects
         IAnalysisFactory jaidaFactory = IAnalysisFactory.create();

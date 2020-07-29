@@ -36,6 +36,7 @@ const int doTauPN   = 1;
 const int doMuDecay = 1;
 const int doTauDecay= 1;
 const int startlocationID = 1; //[1=from earth entrance: 2=800m away from IceCube origin]
+const long random_seed = 1337;
 
 using namespace std;
 
@@ -161,12 +162,13 @@ void I3Juliet::GenerateJULIeT(bool isInteractive)
 
      fJULIeTObj = 
         fJNIEnv->NewObject(fJULIeT, fJNIEnv->GetMethodID(fJULIeT, "<init>", 
-                       "(IIDIIIIIIIIIIIIIIIIII)V"), 
+                       "(IIDIIIIIIIIIIIIIIIIIIL)V"), 
                        flavorID, doubletID, energy, matID,
                        doCC, doNC, doMuBrem, doTauBrem, doMuKnock, doTauKnock,
                        doMu2e, doTau2e, doMu2mu, doTau2mu,
                        doMu2tau, doTau2tau, doMuPN, doTauPN,
-                       doMuDecay, doTauDecay, startlocationID);
+                       doMuDecay, doTauDecay, startlocationID,
+                       random_seed);
   }
 
 }

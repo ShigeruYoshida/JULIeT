@@ -228,7 +228,8 @@ public class JulietTask {
                                 doCC, doNC, doMuBrems, doTauBrems, 
                                 doMuKnock, doTauKnock, doMu2e, doTau2e,
                                 doMu2mu, doTau2mu, doMu2tau, doTau2tau,
-                                doMuPN, doTauPN, doMuDecay, doTauDecay, 0);
+                                doMuPN, doTauPN, doMuDecay, doTauDecay, 0,
+                                System.currentTimeMillis());
 	swingRun.messageField.setText("done!");
 	}catch(IOException e) {
             swingRun.messageField.setText("IOException: " + e.getMessage());

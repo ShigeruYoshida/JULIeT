@@ -137,6 +137,7 @@ public class JulietEventGenerator {
 
     /** Random Generator */
     RandomGenerator rand;
+    long seed;
 
     /** List of the cascade particles, energy deposite and 
 	the interaction points along the track */
@@ -165,17 +166,15 @@ public class JulietEventGenerator {
                                 int doCC, int doNC, int doMuBrems, int doTauBrems, 
                                 int doMuKnock, int doTauKnock, int doMu2e, int doTau2e,
                                 int doMu2mu, int doTau2mu, int doMu2tau, int doTau2tau,
-                                int doMuPN, int doTauPN, 
-				int doGR,
-				int doMuDecay, int doTauDecay, int posID) throws IOException{
+                                int doMuPN, int doTauPN, int doGR, int doMuDecay,
+                                int doTauDecay, int posID, long seed) throws IOException{
 
         configureJULIeT(flavorID, doubletID, energy, mediumID, 
                         doCC, doNC, doMuBrems, doTauBrems, 
                         doMuKnock, doTauKnock, doMu2e, doTau2e,
                         doMu2mu, doTau2mu, doMu2tau, doTau2tau,
-                        doMuPN, doTauPN, 
-			doGR,
-			doMuDecay, doTauDecay, posID);
+                        doMuPN, doTauPN, doGR, doMuDecay,
+                        doTauDecay, posID, seed);
 
     }
     /** The same constructor, but without the glashow resoanance. 
@@ -185,18 +184,17 @@ public class JulietEventGenerator {
                                 int doCC, int doNC, int doMuBrems, int doTauBrems, 
                                 int doMuKnock, int doTauKnock, int doMu2e, int doTau2e,
                                 int doMu2mu, int doTau2mu, int doMu2tau, int doTau2tau,
-                                int doMuPN, int doTauPN, 
-				int doMuDecay, int doTauDecay, int posID) throws IOException{
+                                int doMuPN, int doTauPN, int doMuDecay,
+                                int doTauDecay, int posID, long seed) throws IOException{
 
-	int doGR = 0;
+	    int doGR = 0;
 
         configureJULIeT(flavorID, doubletID, energy, mediumID, 
                         doCC, doNC, doMuBrems, doTauBrems, 
                         doMuKnock, doTauKnock, doMu2e, doTau2e,
                         doMu2mu, doTau2mu, doMu2tau, doTau2tau,
-                        doMuPN, doTauPN, 
-			doGR,
-			doMuDecay, doTauDecay, posID);
+                        doMuPN, doTauPN, doGR, doMuDecay,
+                        doTauDecay, posID, seed);
 
     }
     public JulietEventGenerator() throws IOException{
@@ -206,9 +204,10 @@ public class JulietEventGenerator {
         int doMuKnock, doTauKnock, doMu2e, doTau2e;
         int doMu2mu, doTau2mu, doMu2tau, doTau2tau;
         int doMuPN, doTauPN, doMuDecay, doTauDecay, posID;
+        long seed;
 
-	/** For Glashow Resonance */
-	int doGR;
+    	/** For Glashow Resonance */
+    	int doGR;
 
         double energy;
 	
@@ -306,14 +305,17 @@ public class JulietEventGenerator {
 	buffer = d.readLine();
 	posID = Integer.valueOf(buffer).intValue();
 
+    System.out.print("Seed for the RandomGenerator");
+    buffer = d.readLine();
+    seed = Long.valueOf(buffer).longValue();
+
 	/** For Glashow Resonance */
-        configureJULIeT(flavorID, doubletID, energy, mediumID, 
-                        doCC, doNC, doMuBrems, doTauBrems, 
-                        doMuKnock, doTauKnock, doMu2e, doTau2e,
-                        doMu2mu, doTau2mu, doMu2tau, doTau2tau,
-                        doMuPN, doTauPN, 
-			doGR,
-			doMuDecay, doTauDecay, posID);
+    configureJULIeT(flavorID, doubletID, energy, mediumID, 
+                    doCC, doNC, doMuBrems, doTauBrems, 
+                    doMuKnock, doTauKnock, doMu2e, doTau2e,
+                    doMu2mu, doTau2mu, doMu2tau, doTau2tau,
+                    doMuPN, doTauPN, doGR, doMuDecay,
+                    doTauDecay, posID, seed);
     }
 
     /**
@@ -327,9 +329,8 @@ public class JulietEventGenerator {
                                  int doCC, int doNC, int doMuBrems, int doTauBrems, 
                                  int doMuKnock, int doTauKnock, int doMu2e, int doTau2e,
                                  int doMu2mu, int doTau2mu, int doMu2tau, int doTau2tau,
-                                 int doMuPN, int doTauPN, 
-				 int doGR,
-				 int doMuDecay, int doTauDecay, int posID) throws IOException{
+                                 int doMuPN, int doTauPN, int doGR, int doMuDecay,
+                                 int doTauDecay, int posID, long seed) throws IOException{
 
 
         primaryFlavor  = flavorID;
@@ -338,11 +339,11 @@ public class JulietEventGenerator {
         materialNumber = mediumID;
 
         // Generate Random Generator
-        rand = new RandomGenerator();
+        rand = new RandomGenerator(seed);
         System.out.println("Random Generator has been generated");
 
         // Register Interactions and read the InteractionMatrix objects
-	/** For Glashow Resonance 16->20*/
+	    /** For Glashow Resonance 16->20*/
         String[] fileName = new String[20];
         String matrixName = null;
         if(materialNumber==0)  interactionsMatrixDirectory = interactionsMatrixDirectoryInIce;
@@ -917,12 +918,12 @@ public class JulietEventGenerator {
 
 		double transferedEnergy  = event.collideNow(rand);
 
-                // get current interaction's name
-                String   curInteractionsName  = event.interactionsNameInPlay();
+        // get current interaction's name
+        String   curInteractionsName  = event.interactionsNameInPlay();
 
-                // Collision occured by NC, WeakInteraction(CC, NC), Decay or Glashow Resonance?
-                wasWeakInt = curInteractionsName.startsWith("Neutrino-Nuclen ");
-                wasNC      = curInteractionsName.startsWith("Neutrino-Nuclen N");
+        // Collision occured by NC, WeakInteraction(CC, NC), Decay or Glashow Resonance?
+        wasWeakInt = curInteractionsName.startsWith("Neutrino-Nuclen ");
+        wasNC      = curInteractionsName.startsWith("Neutrino-Nuclen N");
 		wasDecay   = (event.mcBaseInPlay.getTypeOfInteraction() == 1);
 		/** For Glashow Resonance */
                 wasGR = curInteractionsName.startsWith("Glashow ");
@@ -936,21 +937,21 @@ public class JulietEventGenerator {
 		//		           event.getFlavorByInteractionsInPlay(),0);
 		//}
 
-                // get current propagation particle
-                Particle curPropParticle        = event.propParticle;
-                int      curPropParticleFlavor  = curPropParticle.getFlavor();
-                int      curPropParticleDoublet = curPropParticle.getDoublet();
-                String   curPropParticleName    = Particle.particleName(curPropParticleFlavor,
-                                                                        curPropParticleDoublet);
+        // get current propagation particle
+        Particle curPropParticle        = event.propParticle;
+        int      curPropParticleFlavor  = curPropParticle.getFlavor();
+        int      curPropParticleDoublet = curPropParticle.getDoublet();
+        String   curPropParticleName    = Particle.particleName(curPropParticleFlavor,
+                                                                curPropParticleDoublet);
 
                 
 		//System.out.println("Colliding via " + curInteractionsName +
 		//            " and producing " + producedParticleName);
 		//System.out.println("  -Current propagation particle : " + curPropParticleName);
 
-                // add prpagation track to the lists
-                boolean addTrack = false;
-                if (curPropParticleFlavor == 1) { // muon flavor
+        // add prpagation track to the lists
+        boolean addTrack = false;
+        if (curPropParticleFlavor == 1) { // muon flavor
 
 		    if (wasWeakInt || wasDecay || wasGR) addTrack = true;
 
@@ -964,12 +965,12 @@ public class JulietEventGenerator {
 		    }
 		}
 
-                if (addTrack) {
-                   trackParticleList.add(new Particle(curPropParticle.getFlavor(), 
-                                                      curPropParticle.getDoublet(),
-                                                      curPropParticle.getEnergy())); 
-                   trackLocationIce3List.add(particleLocation_J3Vector_ice3);
-                }
+        if (addTrack) {
+           trackParticleList.add(new Particle(curPropParticle.getFlavor(), 
+                                              curPropParticle.getDoublet(),
+                                              curPropParticle.getEnergy())); 
+           trackLocationIce3List.add(particleLocation_J3Vector_ice3);
+        }
 
                 // add secondary cascade to the lists
 		if ((event.getFlavorByInteractionsInPlay()==0 && !wasGR) || 
@@ -994,11 +995,11 @@ public class JulietEventGenerator {
 
 	    double afterInteractionLogEnergy = event.propParticle.getLogEnergy(); 
                                            // logEnergy after interaction
-            double afterInteractionEnergy = event.propParticle.getEnergy();
+        double afterInteractionEnergy = event.propParticle.getEnergy();
                                            // Energy after interaction
         
-            //System.out.println("logEnergy after interaction is  "+ afterInteractionLogEnergy);
-            //System.out.println("Energy after interaction is  "+ afterInteractionEnergy);
+        //System.out.println("logEnergy after interaction is  "+ afterInteractionLogEnergy);
+        //System.out.println("Energy after interaction is  "+ afterInteractionEnergy);
 
 	    if ((afterInteractionLogEnergy <= InteractionsBase.getLogEnergyProducedMinimum()) || 
                 (wasNC && afterInteractionEnergy < neutrinoMinimumEnergyInTravel)){
@@ -1094,7 +1095,6 @@ public class JulietEventGenerator {
     }
 
 
-
     /** Method to run multiple events (numberOfEvent) 
         with various primary energies from
 	logE = Particle.getLogEnergyMinimum() all the way up to 10^12 GeV.
@@ -1105,7 +1105,7 @@ public class JulietEventGenerator {
 	
 	for(int iLogE=0; iLogE<dim; iLogE++){
 	    primaryiLogE = iLogE;
-//System.out.println(iLogE);
+        //System.out.println(iLogE);
 	    double logPrimaryEnergy = 
 		Particle.getDeltaLogEnergy()*(double )iLogE + Particle.getLogEnergyMinimum();
 	    primaryEnergy = Math.pow(10.0,logPrimaryEnergy);
