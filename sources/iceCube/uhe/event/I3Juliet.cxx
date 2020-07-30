@@ -162,7 +162,7 @@ void I3Juliet::GenerateJULIeT(bool isInteractive)
 
      fJULIeTObj = 
         fJNIEnv->NewObject(fJULIeT, fJNIEnv->GetMethodID(fJULIeT, "<init>", 
-                       "(IIDIIIIIIIIIIIIIIIIIIL)V"), 
+                       "(IIDIIIIIIIIIIIIIIIIIIJ)V"), 
                        flavorID, doubletID, energy, matID,
                        doCC, doNC, doMuBrem, doTauBrem, doMuKnock, doTauKnock,
                        doMu2e, doTau2e, doMu2mu, doTau2mu,
