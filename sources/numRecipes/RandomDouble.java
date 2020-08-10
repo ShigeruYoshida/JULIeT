@@ -66,27 +66,41 @@ public class RandomDouble implements Serializable{
     private static final long LMASK = 0x7fffffffL; 
     // least significant r bits 
     private long[] state; // the array for the state vector
+    private long[] random_state; // the array for the state vector including the current index
     private int left = 1;
     private int initf = 0;
     private int selectedIndex;
 
-
-
     /** Constructor to initialize state[N] with a seed */
     public RandomDouble(long s) {
-	int j;
-	state =  new long[N];
-	state[0]= s & 0xffffffffL;
+	    int j;
+	    state =  new long[N];
+	    state[0]= s & 0xffffffffL;
 
-	for (j=1; j<N; j++) {
-	    state[j] = (1812433253L * (state[j-1] ^ (state[j-1] >> 30)) + (long )j); 
-	    // See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier.
-	    // In the previous versions, MSBs of the seed affect   
-	    // only MSBs of the array state[].                     
-	    // 2002/01/09 modified by Makoto Matsumoto             
-	    state[j] &= 0xffffffffL;  // for >32 bit machines 
-	}
-	left = 1; initf = 1;
+	    for (j=1; j<N; j++) {
+  	    state[j] = (1812433253L * (state[j-1] ^ (state[j-1] >> 30)) + (long )j); 
+  	    // See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier.
+  	    // In the previous versions, MSBs of the seed affect   
+  	    // only MSBs of the array state[].                     
+  	    // 2002/01/09 modified by Makoto Matsumoto             
+  	    state[j] &= 0xffffffffL;  // for >32 bit machines 
+ 	    }
+	    left = 1; initf = 1;
+    }
+
+    public RandomDouble(long[] init_state){
+      state = new long[N];
+      System.arraycopy(init_state, 0, state, 0, N);
+      selectedIndex = (int) init_state[N];
+      left = (int) init_state[N+1];
+    }
+
+    public long[] GetState(){
+      random_state = new long[N+2];
+      System.arraycopy(state, 0, random_state, 0, N);
+      random_state[N] = selectedIndex;
+      random_state[N+1] = left;
+      return random_state;
     }
 
     public long MixBits(long u, long v){

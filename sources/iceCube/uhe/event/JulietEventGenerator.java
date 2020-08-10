@@ -138,6 +138,7 @@ public class JulietEventGenerator {
     /** Random Generator */
     RandomGenerator rand;
     long seed;
+    long[] random_state;
 
     /** List of the cascade particles, energy deposite and 
 	the interaction points along the track */
@@ -145,6 +146,8 @@ public class JulietEventGenerator {
     ListIterator particleIterator = null;
     List locationIce3List = null;
     ListIterator locationIce3Iterator = null;
+    List particleInteractionsList = null;
+    ListIterator particleInteractionIterator = null;
 
     /** List of the track particles and 
         the interaction points */
@@ -169,14 +172,17 @@ public class JulietEventGenerator {
                                 int doMuPN, int doTauPN, int doGR, int doMuDecay,
                                 int doTauDecay, int posID, long seed) throws IOException{
 
+        long[] random_state = null;
+
         configureJULIeT(flavorID, doubletID, energy, mediumID, 
                         doCC, doNC, doMuBrems, doTauBrems, 
                         doMuKnock, doTauKnock, doMu2e, doTau2e,
                         doMu2mu, doTau2mu, doMu2tau, doTau2tau,
                         doMuPN, doTauPN, doGR, doMuDecay,
-                        doTauDecay, posID, seed);
+                        doTauDecay, posID, seed, random_state);
 
     }
+
     /** The same constructor, but without the glashow resoanance. 
 	This constructor exists to maintain the backward compatibility
     */
@@ -188,15 +194,40 @@ public class JulietEventGenerator {
                                 int doTauDecay, int posID, long seed) throws IOException{
 
 	    int doGR = 0;
+        long[] random_state = null;
 
         configureJULIeT(flavorID, doubletID, energy, mediumID, 
                         doCC, doNC, doMuBrems, doTauBrems, 
                         doMuKnock, doTauKnock, doMu2e, doTau2e,
                         doMu2mu, doTau2mu, doMu2tau, doTau2tau,
                         doMuPN, doTauPN, doGR, doMuDecay,
-                        doTauDecay, posID, seed);
+                        doTauDecay, posID, seed, random_state);
 
     }
+
+    /**
+      Constructor using the random_state for the generator.
+    */
+    public JulietEventGenerator(int flavorID, int doubletID, double energy, int mediumID, 
+                                int doCC, int doNC, int doMuBrems, int doTauBrems, 
+                                int doMuKnock, int doTauKnock, int doMu2e, int doTau2e,
+                                int doMu2mu, int doTau2mu, int doMu2tau, int doTau2tau,
+                                int doMuPN, int doTauPN, int doGR, int doMuDecay,
+                                int doTauDecay, int posID, long[] random_state) throws IOException{
+
+        long seed = null;
+
+        configureJULIeT(flavorID, doubletID, energy, mediumID, 
+                        doCC, doNC, doMuBrems, doTauBrems, 
+                        doMuKnock, doTauKnock, doMu2e, doTau2e,
+                        doMu2mu, doTau2mu, doMu2tau, doTau2tau,
+                        doMuPN, doTauPN, doGR, doMuDecay,
+                        doTauDecay, posID, seed, random_state);
+
+    }
+
+
+
     public JulietEventGenerator() throws IOException{
 
         int flavorID, doubletID, mediumID; 
@@ -205,6 +236,7 @@ public class JulietEventGenerator {
         int doMu2mu, doTau2mu, doMu2tau, doTau2tau;
         int doMuPN, doTauPN, doMuDecay, doTauDecay, posID;
         long seed;
+        long[] random_state = null;
 
     	/** For Glashow Resonance */
     	int doGR;
@@ -315,7 +347,7 @@ public class JulietEventGenerator {
                     doMuKnock, doTauKnock, doMu2e, doTau2e,
                     doMu2mu, doTau2mu, doMu2tau, doTau2tau,
                     doMuPN, doTauPN, doGR, doMuDecay,
-                    doTauDecay, posID, seed);
+                    doTauDecay, posID, seed, random_state);
     }
 
     /**
@@ -330,7 +362,8 @@ public class JulietEventGenerator {
                                  int doMuKnock, int doTauKnock, int doMu2e, int doTau2e,
                                  int doMu2mu, int doTau2mu, int doMu2tau, int doTau2tau,
                                  int doMuPN, int doTauPN, int doGR, int doMuDecay,
-                                 int doTauDecay, int posID, long seed) throws IOException{
+                                 int doTauDecay, int posID, long seed,
+                                 long[] random_state) throws IOException{
 
 
         primaryFlavor  = flavorID;
@@ -339,7 +372,15 @@ public class JulietEventGenerator {
         materialNumber = mediumID;
 
         // Generate Random Generator
-        rand = new RandomGenerator(seed);
+        if(seed != null){
+          rand = new RandomGenerator(seed);
+        }
+        else if(random_state != null){
+            rand = new RandomGenerator(random_state);
+        }
+        else{
+            rand = new RandomGenerator();
+        }
         System.out.println("Random Generator has been generated");
 
         // Register Interactions and read the InteractionMatrix objects
@@ -820,10 +861,11 @@ public class JulietEventGenerator {
     public void runSingleEvent( ){
 
 	// generate the data list
-	particleList          = new LinkedList();
-	locationIce3List      = new LinkedList();
-	trackParticleList     = new LinkedList();
-	trackLocationIce3List = new LinkedList();
+	particleList          =    new LinkedList();
+    particleInteractionsList = new LinkedList();
+	locationIce3List      =    new LinkedList();
+	trackParticleList     =    new LinkedList();
+	trackLocationIce3List =    new LinkedList();
 
 	// generate a propagating particle
 	propParticle = new Particle(primaryFlavor,primaryDoublet,primaryEnergy);
@@ -836,10 +878,10 @@ public class JulietEventGenerator {
 	particleAxis_J3Line_ice3.setAxisLength(startLocation);
 	particleAxis_J3Line_center.setAxisLength(startLocation);
 
-        // add propParticle to trackParticleList and trackLocationIce3List
-        // *** It's an initial primary track ***
-        trackParticleList.add(new Particle(primaryFlavor, primaryDoublet, primaryEnergy)); 
-        trackLocationIce3List.add(startLocation_J3Vector_ice3);
+    // add propParticle to trackParticleList and trackLocationIce3List
+    // *** It's an initial primary track ***
+    trackParticleList.add(new Particle(primaryFlavor, primaryDoublet, primaryEnergy)); 
+    trackLocationIce3List.add(startLocation_J3Vector_ice3);
 
 	// generate the particle point
 	point = new ParticlePoint(0.0, nadirAngleAtEntrance, materialNumber);
@@ -861,7 +903,7 @@ public class JulietEventGenerator {
 
 	// flag to see if the collision is the week interaction/decay process.
 	boolean wasWeakInt = false;
-        boolean wasNC = false;
+    boolean wasNC = false;
 	boolean wasDecay = false;
 	/** For Glashow Resonance */
 	boolean wasGR = false;
@@ -926,8 +968,8 @@ public class JulietEventGenerator {
         wasNC      = curInteractionsName.startsWith("Neutrino-Nuclen N");
 		wasDecay   = (event.mcBaseInPlay.getTypeOfInteraction() == 1);
 		/** For Glashow Resonance */
-                wasGR = curInteractionsName.startsWith("Glashow ");
-                wasGRLepton = curInteractionsName.startsWith("Glashow Resonance Leptonic ");
+        wasGR = curInteractionsName.startsWith("Glashow ");
+        wasGRLepton = curInteractionsName.startsWith("Glashow Resonance Leptonic ");
 
 		// get produced particle's name
 		//String   producedParticleName = Particle.particleName(
@@ -980,11 +1022,12 @@ public class JulietEventGenerator {
 		    particleList.add(new Particle(event.getFlavorByInteractionsInPlay(),
 						  1,transferedEnergy));
 		    locationIce3List.add(particleLocation_J3Vector_ice3);
+            particleInteractionsList.add(curInteractionsName);
 		}else if(wasGRLepton){ // The GR produced neurtino as a propagating particle
 		    particleList.add(new Particle(event.getFlavorByInteractionsInPlay(),
 						  0,transferedEnergy)); // neutrino
 		    locationIce3List.add(particleLocation_J3Vector_ice3);
-
+            particleInteractionsList.add(curInteractionsName);
 		}else{  // producing secondary track. current version of JULIeT
                         // ignore secondary tracks.
 
@@ -1082,6 +1125,9 @@ public class JulietEventGenerator {
     public ListIterator getTrackParticleIterator(){
 	return trackParticleList.listIterator();
     }
+    public ListIterator getParticleInteractionsIterator(){
+    return particleInteractionsList.listIterator();
+    }
 
 
     /** Return location hit iterator which allows
@@ -1094,6 +1140,10 @@ public class JulietEventGenerator {
 	return trackLocationIce3List.listIterator();
     }
 
+    public long[] getRandomState(){
+        long[] state = rand.GetState();
+        return state;
+    }
 
     /** Method to run multiple events (numberOfEvent) 
         with various primary energies from

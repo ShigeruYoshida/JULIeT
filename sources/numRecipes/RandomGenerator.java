@@ -35,6 +35,17 @@ public class RandomGenerator implements Serializable{
 
     }
 
+	/** constructor with a given random state. */
+    public RandomGenerator(long[] random_state) {
+	    if(generator == null){ // Initialization
+	        generator = new RandomDouble(random_state);
+	    }
+    }
+
+    public long[] GetState(){
+      long[] state = generator.GetState();
+      return state;
+    }
 
     public double GetRandomDouble( ) { // Get the preudorandom distributed 
 	                               // uniformly.
