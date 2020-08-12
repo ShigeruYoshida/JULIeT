@@ -215,7 +215,7 @@ public class JulietEventGenerator {
                                 int doMuPN, int doTauPN, int doGR, int doMuDecay,
                                 int doTauDecay, int posID, long[] random_state) throws IOException{
 
-        long seed = null;
+        long seed = -1;
 
         configureJULIeT(flavorID, doubletID, energy, mediumID, 
                         doCC, doNC, doMuBrems, doTauBrems, 
@@ -372,16 +372,18 @@ public class JulietEventGenerator {
         materialNumber = mediumID;
 
         // Generate Random Generator
-        if(seed != null){
+        if(seed != -1){
+          System.out.println("Using seed to setup Random Generator");
           rand = new RandomGenerator(seed);
         }
         else if(random_state != null){
-            rand = new RandomGenerator(random_state);
+          System.out.println("Using random_state to setup Random Generator");
+          rand = new RandomGenerator(random_state);
         }
         else{
-            rand = new RandomGenerator();
+          System.out.println("Using system time to setup Random Generator");
+          rand = new RandomGenerator();
         }
-        System.out.println("Random Generator has been generated");
 
         // Register Interactions and read the InteractionMatrix objects
 	    /** For Glashow Resonance 16->20*/
@@ -1143,6 +1145,10 @@ public class JulietEventGenerator {
     public long[] getRandomState(){
         long[] state = rand.GetState();
         return state;
+    }
+
+    public void setRandomState(long[] state){
+        rand = new RandomGenerator(state);
     }
 
     /** Method to run multiple events (numberOfEvent) 
