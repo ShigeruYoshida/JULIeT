@@ -170,6 +170,52 @@ public class JulietEventGenerator {
                                 int doMuKnock, int doTauKnock, int doMu2e, int doTau2e,
                                 int doMu2mu, int doTau2mu, int doMu2tau, int doTau2tau,
                                 int doMuPN, int doTauPN, int doGR, int doMuDecay,
+                                int doTauDecay, int posID) throws IOException{
+
+        long[] random_state = null;
+        long seed = -1;
+
+        configureJULIeT(flavorID, doubletID, energy, mediumID, 
+                        doCC, doNC, doMuBrems, doTauBrems, 
+                        doMuKnock, doTauKnock, doMu2e, doTau2e,
+                        doMu2mu, doTau2mu, doMu2tau, doTau2tau,
+                        doMuPN, doTauPN, doGR, doMuDecay,
+                        doTauDecay, posID, seed, random_state);
+
+    }
+
+
+    /** The same constructor, but without the glashow resoanance. 
+	This constructor exists to maintain the backward compatibility
+    */
+    public JulietEventGenerator(int flavorID, int doubletID, double energy, int mediumID, 
+                                int doCC, int doNC, int doMuBrems, int doTauBrems, 
+                                int doMuKnock, int doTauKnock, int doMu2e, int doTau2e,
+                                int doMu2mu, int doTau2mu, int doMu2tau, int doTau2tau,
+                                int doMuPN, int doTauPN, int doMuDecay,
+                                int doTauDecay, int posID) throws IOException{
+
+	    int doGR = 0;
+        long[] random_state = null;
+        long seed = -1;
+
+        configureJULIeT(flavorID, doubletID, energy, mediumID, 
+                        doCC, doNC, doMuBrems, doTauBrems, 
+                        doMuKnock, doTauKnock, doMu2e, doTau2e,
+                        doMu2mu, doTau2mu, doMu2tau, doTau2tau,
+                        doMuPN, doTauPN, doGR, doMuDecay,
+                        doTauDecay, posID, seed, random_state);
+
+    }
+
+    /**
+      Constructor using the seed for the random generator.
+    */
+    public JulietEventGenerator(int flavorID, int doubletID, double energy, int mediumID, 
+                                int doCC, int doNC, int doMuBrems, int doTauBrems, 
+                                int doMuKnock, int doTauKnock, int doMu2e, int doTau2e,
+                                int doMu2mu, int doTau2mu, int doMu2tau, int doTau2tau,
+                                int doMuPN, int doTauPN, int doGR, int doMuDecay,
                                 int doTauDecay, int posID, long seed) throws IOException{
 
         long[] random_state = null;
@@ -184,7 +230,7 @@ public class JulietEventGenerator {
     }
 
     /** The same constructor, but without the glashow resoanance. 
-	This constructor exists to maintain the backward compatibility
+    This constructor exists to maintain the backward compatibility
     */
     public JulietEventGenerator(int flavorID, int doubletID, double energy, int mediumID, 
                                 int doCC, int doNC, int doMuBrems, int doTauBrems, 
@@ -193,7 +239,7 @@ public class JulietEventGenerator {
                                 int doMuPN, int doTauPN, int doMuDecay,
                                 int doTauDecay, int posID, long seed) throws IOException{
 
-	    int doGR = 0;
+        int doGR = 0;
         long[] random_state = null;
 
         configureJULIeT(flavorID, doubletID, energy, mediumID, 
