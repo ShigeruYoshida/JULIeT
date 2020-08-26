@@ -147,7 +147,6 @@ public class JulietEventGenerator {
     List locationIce3List = null;
     ListIterator locationIce3Iterator = null;
     List particleInteractionsList = null;
-    ListIterator particleInteractionIterator = null;
 
     /** List of the track particles and 
         the interaction points */
@@ -418,13 +417,13 @@ public class JulietEventGenerator {
         materialNumber = mediumID;
 
         // Generate Random Generator
-        if(seed != -1){
-          System.out.println("Using seed to setup Random Generator");
-          rand = new RandomGenerator(seed);
-        }
-        else if(random_state != null){
+        if(random_state != null){
           System.out.println("Using random_state to setup Random Generator");
           rand = new RandomGenerator(random_state);
+        }
+        else if(seed != -1){
+          System.out.println("Using seed to setup Random Generator");
+          rand = new RandomGenerator(seed);
         }
         else{
           System.out.println("Using system time to setup Random Generator");
