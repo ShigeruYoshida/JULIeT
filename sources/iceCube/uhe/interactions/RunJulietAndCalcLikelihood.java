@@ -74,7 +74,8 @@ public class RunJulietAndCalcLikelihood {
 	    				   doCC, doNC, doMuBrems, doTauBrems,
 	    				   doMuKnock, doTauKnock, doMu2e, doTau2e,
 	    				   doMu2mu, doTau2mu, doMu2tau, doTau2tau,
-	    				   doMuPN, doTauPN, doGR, doMuDecay, doTauDecay,posID);
+	    				   doMuPN, doTauPN, doGR, doMuDecay, doTauDecay,posID,
+	    				   System.currentTimeMillis());
 	//new  JulietEventGenerator(flavorID, doubletID, inice_initial_energy, mediumID,
 	//				   0, 0, 0, 0,
 	//				   0, 0, 0, 0,
