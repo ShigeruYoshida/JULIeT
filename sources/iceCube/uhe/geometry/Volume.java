@@ -154,6 +154,11 @@ public class Volume{
 	line.setAxisLength(axisLengthFrom);
 	double deltaLength = 1.0e-3*(axisLengthTo-axisLengthFrom);
 	double axisLength = axisLengthFrom;
+        while(axisLength == axisLength + deltaLength){
+            System.err.println(
+                "deltaLength is too small for numerical precision. Increasing it by a factor of 10.");
+            deltaLength *= 10;
+        }
 	while(axisLength<axisLengthTo){
 	    if(isInsideVolume(line)) return true;
 	    axisLength += deltaLength;
