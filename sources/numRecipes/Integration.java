@@ -43,10 +43,12 @@ public class Integration {
 	    tnm = (double )it;
 	    del = (upperBound - lowerBound)/tnm;
 	    x = lowerBound + 0.5*del;
+	    double[] funcValuesToSum = new double[it];
 	    for(int j=1;j<=it;j++){
-		sum += func.getFunction(functionIndex, parameters, x);
-		x += del;
+			funcValuesToSum[j-1] = func.getFunction(functionIndex, parameters, x);
+			x += del;
 	    }
+    	sum = KahanSum(funcValuesToSum);
 	    grandSum[functionIndex] = 0.5*(grandSum[functionIndex]+del*sum);
 	}
 
@@ -54,6 +56,22 @@ public class Integration {
 	return grandSum[functionIndex];
     }
 
+    public static double KahanSum(double[] valuesToSum){
+    	double sum = 0.0;
+
+    	// Summation error
+    	double c = 0.0;
+    	for(int i=0; i<valuesToSum.length; i++){
+    		double val = valuesToSum[i];
+    		double y = val - c;
+    		double t = sum + y;
+
+    		c = (t - sum) - y;
+
+    		sum = t;
+    	}
+    	return sum;
+    }
     /** Iterated Trapzd integraion method. This is the fundamenthal method
 	for more advanced integration.
         Integration blacket [lowerBound upperBound] */
