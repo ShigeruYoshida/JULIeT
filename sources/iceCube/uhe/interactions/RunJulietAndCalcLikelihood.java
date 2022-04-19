@@ -42,27 +42,34 @@ public class RunJulietAndCalcLikelihood {
 
 	int flavorID = 1;
 	int doubletID = 1;
+	int flavorIDforLikelihood = 1;
+	int doubletIDforLikelihood = 1;
 	int numberOfEvents = 10;
 	ParticlePoint point = null;
 	List llhList = null;
 	String fileName = null;
 
-	if(args.length!=7){
-            System.out.println("Usage: RunJulietAndCalcLikelihood flavorID doubletID number-of-events energy [GeV] log(threshold_e [GeV]) or log10(yThreshls)  list-file-name inelasticityBase(yes 1 no 0)");
+	if(args.length!=9){
+            System.out.println("Usage: RunJulietAndCalcLikelihood flavorID doubletID flavorIDforLikelihood doubletIDforLikelihood number-of-events energy [GeV] log(threshold_e [GeV]) or log10(yThreshls)  list-file-name inelasticityBase(yes 1 no 0)");
             System.exit(0);
         }else{
             flavorID = Integer.valueOf(args[0]).intValue();
             doubletID = Integer.valueOf(args[1]).intValue();
-            numberOfEvents = Integer.valueOf(args[2]).intValue();
-            inice_initial_energy = Double.valueOf(args[3]).doubleValue();
-            threshold = Double.valueOf(args[4]).doubleValue();
-	    fileName = args[5];
-	    if(Integer.valueOf(args[6]).intValue()==1) inelasticityBase = true;
+            flavorIDforLikelihood = Integer.valueOf(args[2]).intValue();
+            doubletIDforLikelihood = Integer.valueOf(args[3]).intValue();
+            numberOfEvents = Integer.valueOf(args[4]).intValue();
+            inice_initial_energy = Double.valueOf(args[5]).doubleValue();
+            threshold = Double.valueOf(args[6]).doubleValue();
+	    fileName = args[7];
+	    if(Integer.valueOf(args[8]).intValue()==1) inelasticityBase = true;
         }
 	if(!inelasticityBase) System.err.format("(flavor doublet) = (%d %d) Energy=%e [GeV] log(E threshold [GeV])=%6.3f\n",
 						flavorID, doubletID, inice_initial_energy,threshold);
 	else System.err.format("(flavor doublet) = (%d %d) Energy=%e [GeV] log(Y threshold)=%6.3f\n",
 						flavorID, doubletID, inice_initial_energy,threshold);
+	System.err.format(" (flavor doublet) for Likilihood (%d %d)\n",flavorIDforLikelihood,doubletIDforLikelihood);
+	System.err.println(" Running particle " + Particle.particleName(flavorID,doubletID));
+	System.err.println(" Likelihood particle " + Particle.particleName(flavorIDforLikelihood,doubletIDforLikelihood));
 	System.err.println("list file name " + fileName);
 
 	RandomGenerator rand = new RandomGenerator();
@@ -74,8 +81,7 @@ public class RunJulietAndCalcLikelihood {
 	    				   doCC, doNC, doMuBrems, doTauBrems,
 	    				   doMuKnock, doTauKnock, doMu2e, doTau2e,
 	    				   doMu2mu, doTau2mu, doMu2tau, doTau2tau,
-	    				   doMuPN, doTauPN, doGR, doMuDecay, doTauDecay,posID,
-	    				   System.currentTimeMillis());
+	    				   doMuPN, doTauPN, doGR, doMuDecay, doTauDecay,posID);
 	//new  JulietEventGenerator(flavorID, doubletID, inice_initial_energy, mediumID,
 	//				   0, 0, 0, 0,
 	//				   0, 0, 0, 0,
@@ -144,7 +150,7 @@ public class RunJulietAndCalcLikelihood {
 	// Internaction Likelihood object
 	//
 	InteractionsLikelihood intLikelihood =  new InteractionsLikelihood(threshold,inelasticityBase);
-	intLikelihood.setPropagatingParticleIDs(flavorID,doubletID);
+	intLikelihood.setPropagatingParticleIDs(flavorIDforLikelihood,doubletIDforLikelihood);
 	intLikelihood.configureInteractionsForLikelihoodCalculation(
 			    doCC, doNC, doMuBrems, doTauBrems, 
                                  doMuKnock, doTauKnock, doMu2e, doTau2e,
