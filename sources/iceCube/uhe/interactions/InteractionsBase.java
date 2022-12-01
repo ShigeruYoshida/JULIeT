@@ -106,6 +106,8 @@ public class InteractionsBase extends MonteCarloBase {
 				   interactMtx.getSigmaMatrix(iLogE) + 
 				   " sum = " + sum + " ratio = " + ratio);
 	    }
+	    // rescale the total cross section for log(produced energy) > logEnergyProducedMinimum
+	    interactMtx.sigmaMtx[iLogE] = sum;
 
 	    //Normalization
 	    for(int kLogE=0; kLogE<expandedDim; kLogE++){
