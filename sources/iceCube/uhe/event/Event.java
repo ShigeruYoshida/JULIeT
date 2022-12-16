@@ -197,6 +197,16 @@ public class Event {
 	double producedLogEnergy = mcBaseInPlay.getProducedEnergy(logEnergy, rand);
 	double producedEnergy   = Math.pow(10.0,producedLogEnergy);
 
+    // When the particle's energy is below the minimum energy
+    // we're pretending it has the minimum energy instead.
+    // When sampling an energy loss were using the min energy's cross section
+    // Scale down the energy of the loss to the particles actual energy
+    // to improve the quality of this approximation
+    if(propParticle.getLogEnergy() < propParticle.getLogEnergyMinimum()){
+        producedEnergy *= propParticle.getEnergy() / Math.pow(10, propParticle.getLogEnergyMinimum());
+        producedLogEnergy += propParticle.getLogEnergy() - propParticle.getLogEnergyMinimum();
+    }
+
 	// Flag for checking Neutrino interactions
 	boolean compareNC = mcBaseInPlay.getInteractionName().startsWith("Neutrino-Nuclen Neutraled ");
 	boolean compareCC = mcBaseInPlay.getInteractionName().startsWith("Neutrino-Nuclen Charged ");
