@@ -17,7 +17,8 @@ and the medium like Z and A(atomic number).
 */
 public class NeutrinoNeutralZeusNewPDF extends Interactions implements Function{
     private static final long serialVersionUID = 2525094295794974370L;
-    private String neutrinoFile = "iceCube/uhe/interactions/diffy_nu_NC_HERAPDF15NLO.dat";
+    private String default_neutrinoFile = "iceCube/uhe/interactions/diffy_nu_NC_HERAPDF15NLO.dat";
+    private String neutrinoFile = "";
     private static final int numberOfEnergyBin = 91;
     private static final int numberOfYBin = 102;
     private double[] logEArray = new double[numberOfEnergyBin];
@@ -30,9 +31,30 @@ public class NeutrinoNeutralZeusNewPDF extends Interactions implements Function{
 	/** Constructor: Register the Particle and ParticlePoint classes.
 	It also reads the pre-calculated y/E * dsigma/dy
         from the data file. */
+	public NeutrinoNeutralZeusNewPDF(Particle p, ParticlePoint s, String nuFile) throws IOException{
+        super(p,s,3);
+
+        if (nuFile.isEmpty()) {
+            neutrinoFile = default_neutrinoFile;
+        } else {
+            neutrinoFile = nuFile;
+        }
+        loadXSecFile();
+    }
+
 	public NeutrinoNeutralZeusNewPDF(Particle p,ParticlePoint s) throws IOException{
 		super(p,s,3);
-		
+
+        if (neutrinoFile.isEmpty()) {
+            neutrinoFile = default_neutrinoFile;
+        }
+
+        loadXSecFile();
+    }
+	
+    private void loadXSecFile() throws IOException {
+        System.out.print("Loading cross section file " + neutrinoFile + "\n");
+
 		File fileName = new File(neutrinoFile);
 		   BufferedReader in = 
 			   new BufferedReader(new FileReader(fileName));
