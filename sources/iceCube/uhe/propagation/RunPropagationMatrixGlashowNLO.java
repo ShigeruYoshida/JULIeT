@@ -75,4 +75,41 @@ public class RunPropagationMatrixGlashowNLO extends RunPropagationMatrix{
 	}
     }
 
+    public RunPropagationMatrixGlashowNLO(
+            double nadirAngle,
+            int intSwitch,
+            int decaySwitch,
+            int mediumNumber, 
+            double neutrinoFactor,
+            String CustomNuCCMtxFile,
+            String CustomNuNCMtxFile
+    ) throws IOException {
+
+	/** For Glashow Resonance **/
+	if((0<intSwitch && intSwitch <512) && (0<decaySwitch && decaySwitch <512)){
+
+	    // Generate the ParticlePoint class.
+	    s = new ParticlePoint(0.0, nadirAngle*Math.PI/180.0,mediumNumber);
+	    System.err.println("Axis length of propagation trajectory " + s.getAxisLength( )
+			       + " [cm]");
+
+	    // Generate Particles involved
+	    nuE = new Particle(0,0);    //Electron Neutrinos
+	    nuMu = new Particle(1,0);   //Muon Neutrinos
+	    nuTau = new Particle(2,0);  //Tau  Neutrinos
+	    e = new Particle(0,1);      //Electron
+	    mu = new Particle(1,1);     //Muon
+	    tau = new Particle(2,1);    //Tauon
+	    pi =  new Particle(3,1);    // hadron.. pi+
+
+	    // Generate the Propagation Matrix
+	    System.err.println("Setting the neutrino factor " + neutrinoFactor);
+	    propMtx = new PropagationMatrixGlashowNLO(
+                nuE, nuMu, nuTau, e, mu, tau, pi, s,
+                intSwitch, decaySwitch, neutrinoFactor,
+                CustomNuCCMtxFile, CustomNuNCMtxFile
+        );
+	}
+    }
+
 }

@@ -17,43 +17,87 @@ public class MainRunGlashowNLO {
         int mediumNumber = 1;
         double nadirAngle = 0.0;
         double trajectoryLength = 1.0;
+        double logLength = 0.0;
         double detectorDepth = 1.4e5;  // Detector Depth.. 1400m = 1.4e5 cm below sea level
         double neutrinoFactor = 1.0;
         RunPropagationMatrixGlashowNLO run = null;
+        boolean receivedTrajLength = true;
+        int idxOffset = 1;
+        boolean receivedCustomNuFiles = false;
+        String customNuCCMtxFile = null;
+        String customNuNCMtxFile = null;
 
-        if(args.length != 6 && args.length != 7) {
-            System.out.println(
-"Usage: MainRunPropagation NadirAngle[deg] log10(trajectoryLength[cm]) intSwitch decaySwitch upDownFlag file-name neutrinoFactor");
+        String cliUsage = (
+            "Usage: MainRunPropagation NadirAngle[deg] log10(trajectoryLength[cm])[optional] " +
+            "intSwitch decaySwitch upDownFlag file-name neutrinoFactor " +
+            "customNuCCMtxFile[optional] customNuNCMtxFile[optional]");
+
+        if(args.length < 6 || args.length > 9) {
+            System.out.println(cliUsage);
             System.exit(0);
-        } else if(args.length == 6){
+        } else {
+            if (args.length % 2 == 0) {
+                receivedTrajLength = false;
+                idxOffset = 0;
+            }
+            else {
+                logLength = Double.parseDouble(args[1]);
+            }
+            System.out.println("logLength: " + logLength);
+
             nadirAngle = Double.valueOf(args[0]).doubleValue();
-            intSwitch = Integer.valueOf(args[1]).intValue();
-            decaySwitch = Integer.valueOf(args[2]).intValue();
-            upDownFlag = Integer.valueOf(args[3]).intValue();
-            fileName = args[4];
-            neutrinoFactor = Double.valueOf(args[5]).doubleValue();
-        } else if(args.length == 7){
-            nadirAngle = Double.valueOf(args[0]).doubleValue();
-            double logLength = Double.valueOf(args[1]).doubleValue();
-            if(logLength > 0.0) trajectoryLength = Math.pow(10.0,logLength);
-                intSwitch = Integer.valueOf(args[2]).intValue();
-            decaySwitch = Integer.valueOf(args[3]).intValue();
-            upDownFlag = Integer.valueOf(args[4]).intValue();
-            fileName = args[5];
-            neutrinoFactor = Double.valueOf(args[6]).doubleValue();
-            System.err.println("Log(Distance)=" + logLength + " Distance=" + trajectoryLength +
-                               "[cm] filename " + fileName);
-    }
+
+            intSwitch = Integer.valueOf(args[1+idxOffset]).intValue();
+            decaySwitch = Integer.valueOf(args[2+idxOffset]).intValue();
+            upDownFlag = Integer.valueOf(args[3+idxOffset]).intValue();
+            fileName = args[4+idxOffset];
+            neutrinoFactor = Double.valueOf(args[5+idxOffset]).doubleValue();
+
+            if (receivedTrajLength){
+                if(logLength > 0.0) trajectoryLength = Math.pow(10., logLength);
+                System.err.println(
+                    "Log(Distance)= " + logLength +
+                    " Distance= " + trajectoryLength +
+                    "[cm] filename " + fileName);
+            }
+
+            if (args.length > 6 + idxOffset){
+                if (args.length == 6 + idxOffset + 2){
+                    customNuCCMtxFile = args[6+idxOffset];
+                    customNuNCMtxFile = args[6+idxOffset+1];
+                    receivedCustomNuFiles = true;
+                }
+                else {
+                    System.out.println(cliUsage);
+                    System.out.println(
+                        "When providing custom neutrino cross section matrices, " +
+                        "they have to be provided for both CC and NC!");
+                    System.exit(0);
+                }
+            }
+        }
 
     if (upDownFlag == 1) {
         System.err.println("Up-going propagation");
         mediumNumber = 1; //Rock
-        run = new RunPropagationMatrixGlashowNLO(
-            nadirAngle,
-            intSwitch,
-            decaySwitch,
-            mediumNumber,
-            neutrinoFactor);
+
+        if (receivedCustomNuFiles){
+            run = new RunPropagationMatrixGlashowNLO(
+                nadirAngle,
+                intSwitch,
+                decaySwitch,
+                mediumNumber,
+                neutrinoFactor,
+                customNuCCMtxFile,
+                customNuNCMtxFile);
+        } else {
+            run = new RunPropagationMatrixGlashowNLO(
+                nadirAngle,
+                intSwitch,
+                decaySwitch,
+                mediumNumber,
+                neutrinoFactor);
+        }
 
         if (args.length == 6) {
             run.traceParticles();
@@ -72,12 +116,23 @@ public class MainRunGlashowNLO {
         double cos_nadir = sq_term/ParticlePoint.REarth;
         nadirAngle = Math.acos(cos_nadir)*180.0/Math.PI;
 
-        run = new RunPropagationMatrixGlashowNLO(
-            nadirAngle,
-            intSwitch,
-            decaySwitch,
-            mediumNumber,
-            neutrinoFactor);
+        if (receivedCustomNuFiles){
+            run = new RunPropagationMatrixGlashowNLO(
+                nadirAngle,
+                intSwitch,
+                decaySwitch,
+                mediumNumber,
+                neutrinoFactor,
+                customNuCCMtxFile,
+                customNuNCMtxFile);
+        } else {
+            run = new RunPropagationMatrixGlashowNLO(
+                nadirAngle,
+                intSwitch,
+                decaySwitch,
+                mediumNumber,
+                neutrinoFactor);
+        }
         
         if (args.length == 6) {
             trajectoryLength = sq_term - (ParticlePoint.REarth-detectorDepth)*cos_zenith;

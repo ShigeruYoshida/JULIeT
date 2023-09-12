@@ -22,11 +22,26 @@ public class PropagationMatrixGlashowNLO extends PropagationMatrix {
                              Particle e,   Particle mu,   Particle tau,
                              Particle pi,  ParticlePoint s,
                              int interactionsSwitch, int decaySwitch,
+                             double neutrinoFactor,
+                             String CustomNuCCMtxFile, String CustomNuNCMtxFile)
+	throws IOException{
+
+	super(nuE, nuMu, nuTau, e, mu, tau, pi, s, interactionsSwitch, decaySwitch, neutrinoFactor,
+	      CustomNuCCMtxFile, CustomNuNCMtxFile, grLeptonNLOMtxObjectFile, grHadronNLOMtxObjectFile);
+
+    System.out.println("Using " + CustomNuCCMtxFile + " and " + CustomNuNCMtxFile +
+                       " to create the propagation matrix instead of the default!");
+    }
+
+    public PropagationMatrixGlashowNLO(Particle nuE, Particle nuMu, Particle nuTau,
+                             Particle e,   Particle mu,   Particle tau,
+                             Particle pi,  ParticlePoint s,
+                             int interactionsSwitch, int decaySwitch,
                              double neutrinoFactor)
 	throws IOException{
 
 	super(nuE, nuMu, nuTau, e, mu, tau, pi, s, interactionsSwitch, decaySwitch, neutrinoFactor,
-	      nuCCMtxObjectFile,nuNCMtxObjectFile, grLeptonNLOMtxObjectFile, grHadronNLOMtxObjectFile);
+	      nuCCMtxObjectFile, nuNCMtxObjectFile, grLeptonNLOMtxObjectFile, grHadronNLOMtxObjectFile);
     }
 
     public PropagationMatrixGlashowNLO(Particle nuE, Particle nuMu, Particle nuTau,
@@ -35,7 +50,7 @@ public class PropagationMatrixGlashowNLO extends PropagationMatrix {
 			     int interactionsSwitch, int decaySwitch) throws IOException{
 
 	super(nuE, nuMu, nuTau, e, mu, tau, pi, s, interactionsSwitch, decaySwitch,
-	      nuCCMtxObjectFile,nuNCMtxObjectFile, grLeptonNLOMtxObjectFile, grHadronNLOMtxObjectFile);
+	      nuCCMtxObjectFile, nuNCMtxObjectFile, grLeptonNLOMtxObjectFile, grHadronNLOMtxObjectFile);
     }
 
 }
