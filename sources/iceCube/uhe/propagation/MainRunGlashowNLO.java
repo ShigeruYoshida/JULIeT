@@ -99,10 +99,10 @@ public class MainRunGlashowNLO {
                 neutrinoFactor);
         }
 
-        if (args.length == 6) {
-            run.traceParticles();
-        } else {
+        if (receivedTrajLength) {
             run.traceParticles(trajectoryLength);
+        } else {
+            run.traceParticles();
         }
 
     } else if(upDownFlag == 0) {
@@ -134,12 +134,12 @@ public class MainRunGlashowNLO {
                 neutrinoFactor);
         }
         
-        if (args.length == 6) {
+        if (receivedTrajLength) {
+            run.traceParticles(trajectoryLength);
+        } else {
             trajectoryLength = sq_term - (ParticlePoint.REarth-detectorDepth)*cos_zenith;
             System.err.println("Zenith " + zenithAngle + " Nadir " + nadirAngle + 
                        " Trajectory " + trajectoryLength/100.0 + " [m]");
-            run.traceParticles(trajectoryLength);
-        } else {
             run.traceParticles(trajectoryLength);
         }
 
