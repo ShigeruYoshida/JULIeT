@@ -17,7 +17,8 @@ and the medium like Z and A(atomic number).
 */
 public class NeutrinoChargeZeusNewPDF extends Interactions implements Function{
     private static final long serialVersionUID = 5427600879174779867L;
-    private String neutrinoFile = "iceCube/uhe/interactions/diffy_nu_CC_HERAPDF15NLO.dat";
+    private String default_neutrinoFile = "iceCube/uhe/interactions/diffy_nu_CC_HERAPDF15NLO.dat";
+    private String neutrinoFile = "";
     private static final int numberOfEnergyBin = 91;
     private static final int numberOfYBin = 102;
     private double[] logEArray = new double[numberOfEnergyBin];
@@ -27,15 +28,36 @@ public class NeutrinoChargeZeusNewPDF extends Interactions implements Function{
     protected static double dsLowerLimit = 1.0e-20; // [mb]
     protected static final double mb2cm2 = 1.0e-27;  //[cm2/mb]
 	
+	public NeutrinoChargeZeusNewPDF(Particle p, ParticlePoint s, String nuFile) throws IOException{
+		super(p,s,3);
+
+        if (nuFile.isEmpty()) {
+            neutrinoFile = default_neutrinoFile;
+        } else {
+            neutrinoFile = nuFile;
+        }
+        loadXSecFile();
+    }
+
 	/** Constructor: Register the Particle and ParticlePoint classes.
 	It also reads the pre-calculated y/E * dsigma/dy
         from the data file. */
 	public NeutrinoChargeZeusNewPDF(Particle p,ParticlePoint s) throws IOException{
 		super(p,s,3);
-		
-		File fileName = new File(neutrinoFile);
-		   BufferedReader in = 
-			   new BufferedReader(new FileReader(fileName));
+
+        if (neutrinoFile.isEmpty()) {
+            neutrinoFile = default_neutrinoFile;
+        }
+
+        loadXSecFile();
+    }
+
+    private void loadXSecFile() throws IOException{
+        System.out.print("Loading cross section file " + neutrinoFile + "\n");
+
+        File fileName = new File(neutrinoFile);
+		BufferedReader in = 
+		    new BufferedReader(new FileReader(fileName));
 		   
 		char separator = ' ';
 		int n = 0;
@@ -92,8 +114,7 @@ public class NeutrinoChargeZeusNewPDF extends Interactions implements Function{
 			Interpolation.mThPolynominalInterpolate(logDyArray[index],
 			yDsigmaArray[index],numberOfYBin,logY,4);
 		double dSigmaDyUp = 
-			Interpolation.mThPolynominalInterpolate(logDyArray[index+1],
-			yDsigmaArray[index+1],numberOfYBin,logY,4);
+			Interpolation.mThPolynominalInterpolate(logDyArray[index+1], yDsigmaArray[index+1],numberOfYBin,logY,4);
 		double yEdSigmaDy = dSigmaDyLow + (dSigmaDyUp-dSigmaDyLow)/
 		    (logEUp-logELow)*(logEnergy-logELow);
 		double dSigmaDy = Math.exp(yEdSigmaDy)*energy/y*mb2cm2;
